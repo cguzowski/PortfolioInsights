@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: atlas-capital-intelligence-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/postgres?currentSchema=atlas_capital_intelligence}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: atlas_capital_intelligence
+  flyway:
+    enabled: true
+    default-schema: atlas_capital_intelligence
+    schemas: atlas_capital_intelligence
+    create-schemas: true
