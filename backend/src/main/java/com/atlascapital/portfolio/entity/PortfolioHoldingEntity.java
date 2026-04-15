@@ -1,4 +1,4 @@
-package com.atlascapital.portfolio.model;
+package com.atlascapital.portfolio.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

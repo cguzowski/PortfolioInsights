@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.atlascapital.portfolio.PortfolioServiceIntegrationTests" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-04-15T10:12:00" hostname="KRZYSKOMP" time="1.178">
+  <properties/>
+  <testcase name="shouldLoadSeededPortfolioFromDatabase()" classname="com.atlascapital.portfolio.PortfolioServiceIntegrationTests" time="1.049"/>
+  <testcase name="shouldPersistHoldingCrudOperations()" classname="com.atlascapital.portfolio.PortfolioServiceIntegrationTests" time="0.128"/>
+  <system-out><![CDATA[12:11:52.986 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.atlascapital.portfolio.PortfolioServiceIntegrationTests]: PortfolioServiceIntegrationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+12:11:53.157 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.atlascapital.AtlasCapitalApplication for test class com.atlascapital.portfolio.PortfolioServiceIntegrationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-04-15T12:11:53.831+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] c.a.p.PortfolioServiceIntegrationTests   : Starting PortfolioServiceIntegrationTests using Java 17.0.12 with PID 15972 (started by guzow in C:\Users\guzow\OneDrive\Desktop\Atlas Capital Intelligence\backend)
+2026-04-15T12:11:53.832+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] c.a.p.PortfolioServiceIntegrationTests   : The following 1 profile is active: "test"
+2026-04-15T12:11:55.053+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-15T12:11:55.157+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 90 ms. Found 2 JPA repository interfaces.
+2026-04-15T12:11:56.130+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-15T12:11:56.463+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:portfolio user=SA
+2026-04-15T12:11:56.468+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-15T12:11:56.559+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:portfolio (H2 2.2)
+2026-04-15T12:11:56.573+02:00  WARN 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.2.224 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2026-04-15T12:11:56.622+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "atlas_capital_intelligence"."flyway_schema_history" does not exist yet
+2026-04-15T12:11:56.635+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.036s)
+2026-04-15T12:11:56.650+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "atlas_capital_intelligence"."flyway_schema_history" ...
+2026-04-15T12:11:56.726+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Current version of schema "atlas_capital_intelligence": << Empty Schema >>
+2026-04-15T12:11:56.740+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema "atlas_capital_intelligence" to version "1 - create portfolio tables"
+2026-04-15T12:11:56.775+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema "atlas_capital_intelligence" to version "2 - seed portfolio data"
+2026-04-15T12:11:56.788+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema "atlas_capital_intelligence" to version "3 - align base currency type"
+2026-04-15T12:11:56.803+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Successfully applied 3 migrations to schema "atlas_capital_intelligence", now at version v3 (execution time 00:00.026s)
+2026-04-15T12:11:56.968+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-15T12:11:57.136+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-04-15T12:11:57.233+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-04-15T12:11:57.713+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-15T12:11:59.024+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-15T12:11:59.059+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-15T12:12:00.338+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] c.a.p.PortfolioServiceIntegrationTests   : Started PortfolioServiceIntegrationTests in 6.958 seconds (process running for 8.781)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

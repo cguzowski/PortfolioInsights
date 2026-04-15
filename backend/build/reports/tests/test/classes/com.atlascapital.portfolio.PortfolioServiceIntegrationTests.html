@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - PortfolioServiceIntegrationTests</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>PortfolioServiceIntegrationTests</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.atlascapital.portfolio.html">com.atlascapital.portfolio</a> &gt; PortfolioServiceIntegrationTests</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">2</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">1.177s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard output</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">shouldLoadSeededPortfolioFromDatabase()</td>
+<td class="success">1.049s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">shouldPersistHoldingCrudOperations()</td>
+<td class="success">0.128s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>12:11:52.986 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.atlascapital.portfolio.PortfolioServiceIntegrationTests]: PortfolioServiceIntegrationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+12:11:53.157 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.atlascapital.AtlasCapitalApplication for test class com.atlascapital.portfolio.PortfolioServiceIntegrationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-04-15T12:11:53.831+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] c.a.p.PortfolioServiceIntegrationTests   : Starting PortfolioServiceIntegrationTests using Java 17.0.12 with PID 15972 (started by guzow in C:\Users\guzow\OneDrive\Desktop\Atlas Capital Intelligence\backend)
+2026-04-15T12:11:53.832+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] c.a.p.PortfolioServiceIntegrationTests   : The following 1 profile is active: &quot;test&quot;
+2026-04-15T12:11:55.053+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-15T12:11:55.157+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 90 ms. Found 2 JPA repository interfaces.
+2026-04-15T12:11:56.130+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-15T12:11:56.463+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:portfolio user=SA
+2026-04-15T12:11:56.468+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-15T12:11:56.559+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] org.flywaydb.core.FlywayExecutor         : Database: jdbc:h2:mem:portfolio (H2 2.2)
+2026-04-15T12:11:56.573+02:00  WARN 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: H2 2.2.224 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2026-04-15T12:11:56.622+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table &quot;atlas_capital_intelligence&quot;.&quot;flyway_schema_history&quot; does not exist yet
+2026-04-15T12:11:56.635+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.036s)
+2026-04-15T12:11:56.650+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table &quot;atlas_capital_intelligence&quot;.&quot;flyway_schema_history&quot; ...
+2026-04-15T12:11:56.726+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Current version of schema &quot;atlas_capital_intelligence&quot;: &lt;&lt; Empty Schema &gt;&gt;
+2026-04-15T12:11:56.740+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema &quot;atlas_capital_intelligence&quot; to version &quot;1 - create portfolio tables&quot;
+2026-04-15T12:11:56.775+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema &quot;atlas_capital_intelligence&quot; to version &quot;2 - seed portfolio data&quot;
+2026-04-15T12:11:56.788+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema &quot;atlas_capital_intelligence&quot; to version &quot;3 - align base currency type&quot;
+2026-04-15T12:11:56.803+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.f.core.internal.command.DbMigrate      : Successfully applied 3 migrations to schema &quot;atlas_capital_intelligence&quot;, now at version v3 (execution time 00:00.026s)
+2026-04-15T12:11:56.968+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-15T12:11:57.136+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-04-15T12:11:57.233+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-04-15T12:11:57.713+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-15T12:11:59.024+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-15T12:11:59.059+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-15T12:12:00.338+02:00  INFO 15972 --- [atlas-capital-intelligence-backend] [    Test worker] c.a.p.PortfolioServiceIntegrationTests   : Started PortfolioServiceIntegrationTests in 6.958 seconds (process running for 8.781)
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 8.10.2</a> at Apr 15, 2026, 12:12:01 PM</p>
+</div>
+</div>
+</body>
+</html>

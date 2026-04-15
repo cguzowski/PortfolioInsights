@@ -1,4 +1,4 @@
-package com.atlascapital.portfolio.exception;
+package com.atlascapital.common.exception;
 
 public class PortfolioNotFoundException extends RuntimeException {
 
