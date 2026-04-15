@@ -28,9 +28,11 @@ class PortfolioServiceIntegrationTests {
 
     @Test
     void shouldLoadSeededPortfolioFromDatabase() {
-        PortfolioSummaryResponse portfolio = portfolioService.getPortfolio();
+        PortfolioSummaryResponse portfolio = portfolioService.getPortfolio(501L, null);
 
         assertThat(portfolio.portfolioId()).isEqualTo(1001L);
+        assertThat(portfolio.userId()).isEqualTo(501L);
+        assertThat(portfolio.userName()).isEqualTo("Sophia Bennett");
         assertThat(portfolio.holdings()).hasSize(5);
         assertThat(portfolio.totalValue()).isPositive();
     }
@@ -47,7 +49,7 @@ class PortfolioServiceIntegrationTests {
                 BigDecimal.valueOf(1.85)
         );
 
-        PortfolioHoldingResponse created = portfolioService.createHolding(createRequest);
+        PortfolioHoldingResponse created = portfolioService.createHolding(501L, 1001L, createRequest);
 
         assertThat(created.id()).isNotNull();
         assertThat(portfolioHoldingRepository.findById(created.id())).isPresent();
@@ -62,12 +64,12 @@ class PortfolioServiceIntegrationTests {
                 BigDecimal.valueOf(2.10)
         );
 
-        PortfolioHoldingResponse updated = portfolioService.updateHolding(created.id(), updateRequest);
+        PortfolioHoldingResponse updated = portfolioService.updateHolding(501L, 1001L, created.id(), updateRequest);
 
         assertThat(updated.name()).isEqualTo("Tesla Motors");
         assertThat(updated.quantity()).isEqualByComparingTo("20.00");
 
-        portfolioService.deleteHolding(created.id());
+        portfolioService.deleteHolding(501L, 1001L, created.id());
 
         assertThat(portfolioHoldingRepository.findById(created.id())).isEmpty();
     }

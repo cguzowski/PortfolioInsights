@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,8 +24,9 @@ public class PortfolioEntity {
     @Id
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUserEntity user;
 
     @Column(name = "portfolio_name", nullable = false, length = 120)
     private String portfolioName;
@@ -53,7 +56,11 @@ public class PortfolioEntity {
     }
 
     public Long getUserId() {
-        return userId;
+        return user.getId();
+    }
+
+    public AppUserEntity getUser() {
+        return user;
     }
 
     public String getPortfolioName() {
