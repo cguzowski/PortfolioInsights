@@ -1,0 +1,56 @@
+<article class="panel">
+  <div class="panel-header">
+    <div>
+      <p class="eyebrow">Manage Holdings</p>
+      <h2>{{ editing() ? 'Edit Position' : 'Add Position' }}</h2>
+    </div>
+    @if (editing()) {
+      <button type="button" class="ghost-button" (click)="cancelled.emit()">Cancel Edit</button>
+    }
+  </div>
+
+  <form class="holding-form" [formGroup]="form()" (ngSubmit)="submitted.emit()">
+    <label>
+      Ticker
+      <input type="text" formControlName="ticker" placeholder="AAPL" />
+    </label>
+    <label>
+      Position Name
+      <input type="text" formControlName="name" placeholder="Apple Inc." />
+    </label>
+    <label>
+      Asset Class
+      <select formControlName="assetClass">
+        <option value="Equity">Equity</option>
+        <option value="ETF">ETF</option>
+        <option value="Bond">Bond</option>
+        <option value="Cash">Cash</option>
+        <option value="Alternative">Alternative</option>
+      </select>
+    </label>
+    <label>
+      Quantity
+      <input type="number" formControlName="quantity" step="0.01" />
+    </label>
+    <label>
+      Average Cost
+      <input type="number" formControlName="averageCost" step="0.01" />
+    </label>
+    <label>
+      Current Price
+      <input type="number" formControlName="currentPrice" step="0.01" />
+    </label>
+    <label class="full-width">
+      Daily Change %
+      <input type="number" formControlName="changePercent" step="0.01" />
+    </label>
+
+    @if (errorMessage()) {
+      <p class="form-error">{{ errorMessage() }}</p>
+    }
+
+    <button type="submit" class="primary-button" [disabled]="saving()">
+      {{ saving() ? 'Saving...' : editing() ? 'Update Holding' : 'Create Holding' }}
+    </button>
+  </form>
+</article>

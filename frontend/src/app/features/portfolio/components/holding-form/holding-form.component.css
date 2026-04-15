@@ -1,0 +1,92 @@
+.panel {
+  padding: 28px;
+  border: 1px solid rgba(125, 169, 255, 0.16);
+  border-radius: 24px;
+  background: rgba(10, 25, 46, 0.82);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(18px);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #7dd5bc;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.76rem;
+}
+
+h2 {
+  margin: 6px 0 0;
+  font-size: 1.75rem;
+  color: #f2f6fb;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.holding-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: #96abc8;
+  font-size: 0.95rem;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(4, 14, 29, 0.82);
+  color: #f2f6fb;
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.primary-button {
+  justify-self: start;
+  background: linear-gradient(90deg, #57d3a1, #83c7ff);
+  color: #05111f;
+  font-weight: 700;
+}
+
+.ghost-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2f6fb;
+}
+
+.form-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #ff7c6f;
+}
+
+@media (max-width: 760px) {
+  .holding-form {
+    grid-template-columns: 1fr;
+  }
+}
