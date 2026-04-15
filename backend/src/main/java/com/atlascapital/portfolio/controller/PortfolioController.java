@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,25 +28,32 @@ public class PortfolioController {
     }
 
     @GetMapping
-    public PortfolioSummaryResponse getPortfolio() {
-        return portfolioService.getPortfolio();
+    public PortfolioSummaryResponse getPortfolio(@RequestParam(required = false) Long userId,
+                                                 @RequestParam(required = false) Long portfolioId) {
+        return portfolioService.getPortfolio(userId, portfolioId);
     }
 
     @PostMapping("/holdings")
     @ResponseStatus(HttpStatus.CREATED)
-    public PortfolioHoldingResponse createHolding(@Valid @RequestBody PortfolioHoldingRequest request) {
-        return portfolioService.createHolding(request);
+    public PortfolioHoldingResponse createHolding(@RequestParam(required = false) Long userId,
+                                                  @RequestParam(required = false) Long portfolioId,
+                                                  @Valid @RequestBody PortfolioHoldingRequest request) {
+        return portfolioService.createHolding(userId, portfolioId, request);
     }
 
     @PutMapping("/holdings/{id}")
-    public PortfolioHoldingResponse updateHolding(@PathVariable Long id,
+    public PortfolioHoldingResponse updateHolding(@RequestParam(required = false) Long userId,
+                                                  @RequestParam(required = false) Long portfolioId,
+                                                  @PathVariable Long id,
                                                   @Valid @RequestBody PortfolioHoldingRequest request) {
-        return portfolioService.updateHolding(id, request);
+        return portfolioService.updateHolding(userId, portfolioId, id, request);
     }
 
     @DeleteMapping("/holdings/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteHolding(@PathVariable Long id) {
-        portfolioService.deleteHolding(id);
+    public void deleteHolding(@RequestParam(required = false) Long userId,
+                              @RequestParam(required = false) Long portfolioId,
+                              @PathVariable Long id) {
+        portfolioService.deleteHolding(userId, portfolioId, id);
     }
 }

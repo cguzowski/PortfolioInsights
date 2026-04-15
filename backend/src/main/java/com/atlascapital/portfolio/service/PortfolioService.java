@@ -24,9 +24,6 @@ import java.util.Map;
 @Service
 @Transactional(readOnly = true)
 public class PortfolioService {
-
-    private static final Long PORTFOLIO_ID = 1001L;
-
     private final PortfolioRepository portfolioRepository;
     private final PortfolioHoldingRepository portfolioHoldingRepository;
 
@@ -36,8 +33,8 @@ public class PortfolioService {
         this.portfolioHoldingRepository = portfolioHoldingRepository;
     }
 
-    public PortfolioSummaryResponse getPortfolio() {
-        PortfolioEntity portfolio = getManagedPortfolio();
+    public PortfolioSummaryResponse getPortfolio(Long userId, Long portfolioId) {
+        PortfolioEntity portfolio = getManagedPortfolio(userId, portfolioId);
         BigDecimal holdingsValue = calculateHoldingsValue(portfolio.getHoldings());
         BigDecimal totalValue = holdingsValue.add(portfolio.getCashBalance());
         BigDecimal totalCost = calculateTotalCost(portfolio.getHoldings());
@@ -52,7 +49,7 @@ public class PortfolioService {
         return new PortfolioSummaryResponse(
                 portfolio.getId(),
                 portfolio.getUserId(),
-                "Sophia Bennett",
+                portfolio.getUser().getFullName(),
                 portfolio.getPortfolioName(),
                 portfolio.getBaseCurrency(),
                 scale(totalValue),
@@ -70,8 +67,8 @@ public class PortfolioService {
     }
 
     @Transactional
-    public PortfolioHoldingResponse createHolding(PortfolioHoldingRequest request) {
-        PortfolioEntity portfolio = getManagedPortfolio();
+    public PortfolioHoldingResponse createHolding(Long userId, Long portfolioId, PortfolioHoldingRequest request) {
+        PortfolioEntity portfolio = getManagedPortfolio(userId, portfolioId);
         PortfolioHoldingEntity holding = new PortfolioHoldingEntity();
         applyRequest(holding, request);
         portfolio.addHolding(holding);
@@ -81,19 +78,21 @@ public class PortfolioService {
     }
 
     @Transactional
-    public PortfolioHoldingResponse updateHolding(Long id, PortfolioHoldingRequest request) {
-        PortfolioEntity portfolio = getManagedPortfolio();
-        PortfolioHoldingEntity holding = findHolding(portfolio, id);
+    public PortfolioHoldingResponse updateHolding(Long userId,
+                                                  Long portfolioId,
+                                                  Long id,
+                                                  PortfolioHoldingRequest request) {
+        PortfolioHoldingEntity holding = getManagedHolding(userId, portfolioId, id);
         applyRequest(holding, request);
         PortfolioHoldingEntity updated = portfolioHoldingRepository.saveAndFlush(holding);
-        BigDecimal holdingsValue = calculateHoldingsValue(portfolio.getHoldings());
+        BigDecimal holdingsValue = calculateHoldingsValue(updated.getPortfolio().getHoldings());
         return toResponse(updated, holdingsValue);
     }
 
     @Transactional
-    public void deleteHolding(Long id) {
-        PortfolioEntity portfolio = getManagedPortfolio();
-        PortfolioHoldingEntity holding = findHolding(portfolio, id);
+    public void deleteHolding(Long userId, Long portfolioId, Long id) {
+        PortfolioHoldingEntity holding = getManagedHolding(userId, portfolioId, id);
+        PortfolioEntity portfolio = holding.getPortfolio();
         portfolio.removeHolding(holding);
         portfolioRepository.saveAndFlush(portfolio);
     }
@@ -163,15 +162,42 @@ public class PortfolioService {
         return value.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private PortfolioEntity getManagedPortfolio() {
-        return portfolioRepository.findById(PORTFOLIO_ID)
-                .orElseThrow(() -> new PortfolioNotFoundException(PORTFOLIO_ID));
+    private PortfolioEntity getManagedPortfolio(Long userId, Long portfolioId) {
+        if (portfolioId != null && userId != null) {
+            return portfolioRepository.findByIdAndUser_Id(portfolioId, userId)
+                    .orElseThrow(() -> new PortfolioNotFoundException(
+                            "Portfolio with id " + portfolioId + " was not found for user " + userId + "."
+                    ));
+        }
+
+        if (portfolioId != null) {
+            return portfolioRepository.findById(portfolioId)
+                    .orElseThrow(() -> new PortfolioNotFoundException(portfolioId));
+        }
+
+        if (userId != null) {
+            return portfolioRepository.findFirstByUser_IdOrderByIdAsc(userId)
+                    .orElseThrow(() -> new PortfolioNotFoundException(
+                            "No portfolio was found for user " + userId + "."
+                    ));
+        }
+
+        return portfolioRepository.findFirstByOrderByIdAsc()
+                .orElseThrow(() -> new PortfolioNotFoundException("No portfolios are available."));
     }
 
-    private PortfolioHoldingEntity findHolding(PortfolioEntity portfolio, Long id) {
-        return portfolio.getHoldings().stream()
-                .filter(holding -> holding.getId().equals(id))
-                .findFirst()
+    private PortfolioHoldingEntity getManagedHolding(Long userId, Long portfolioId, Long id) {
+        if (portfolioId != null && userId != null) {
+            return portfolioHoldingRepository.findByIdAndPortfolio_IdAndPortfolio_User_Id(id, portfolioId, userId)
+                    .orElseThrow(() -> new HoldingNotFoundException(id));
+        }
+
+        if (portfolioId != null) {
+            return portfolioHoldingRepository.findByIdAndPortfolio_Id(id, portfolioId)
+                    .orElseThrow(() -> new HoldingNotFoundException(id));
+        }
+
+        return portfolioHoldingRepository.findById(id)
                 .orElseThrow(() -> new HoldingNotFoundException(id));
     }
 
