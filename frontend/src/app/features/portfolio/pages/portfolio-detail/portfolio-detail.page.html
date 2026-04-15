@@ -1,0 +1,91 @@
+@if (loading()) {
+  <div class="page-state">Loading portfolio dashboard...</div>
+} @else if (errorMessage() && !portfolio()) {
+  <div class="page-state error">{{ errorMessage() }}</div>
+} @else {
+  @if (portfolio(); as data) {
+    <main class="dashboard-shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Atlas Capital Intelligence</p>
+          <h1>{{ data.portfolioName }}</h1>
+          <p class="hero-copy">
+            A live view of {{ data.userName }}'s portfolio, current exposure, and allocation mix.
+          </p>
+        </div>
+        <div class="hero-meta">
+          <span>{{ data.baseCurrency }} Base</span>
+          <span>{{ data.riskProfile }} Risk</span>
+          <span>Updated {{ data.lastUpdated | date: 'medium' }}</span>
+        </div>
+      </section>
+
+      <section class="metrics-grid">
+        <app-portfolio-summary-card
+          label="Total Value"
+          [value]="data.totalValue | currency: data.baseCurrency : 'symbol' : '1.0-0'"
+          [subtitle]="(data.dailyPnl | currency: data.baseCurrency : 'symbol' : '1.0-0') + ' today'"
+          [tone]="metricTone(data.dailyPnl)"
+        />
+        <app-portfolio-summary-card
+          label="Total P&amp;L"
+          [value]="data.totalPnl | currency: data.baseCurrency : 'symbol' : '1.0-0'"
+          [subtitle]="(data.totalPnlPercent / 100 | percent: '1.2-2') + ' since inception'"
+          [tone]="metricTone(data.totalPnl)"
+        />
+        <app-portfolio-summary-card
+          label="Invested Capital"
+          [value]="totalInvested() | currency: data.baseCurrency : 'symbol' : '1.0-0'"
+          [subtitle]="(totalExposure() | currency: data.baseCurrency : 'symbol' : '1.0-0') + ' market exposure'"
+        />
+        <app-portfolio-summary-card
+          label="Cash Balance"
+          [value]="data.cashBalance | currency: data.baseCurrency : 'symbol' : '1.0-0'"
+          [subtitle]="data.holdings.length + ' active positions'"
+        />
+      </section>
+
+      <section class="content-grid">
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Allocation</p>
+              <h2>Portfolio Mix</h2>
+            </div>
+          </div>
+
+          <div class="allocation-list">
+            @for (allocation of data.allocations; track allocation.assetClass) {
+              <div class="allocation-row">
+                <div class="allocation-copy">
+                  <span>{{ allocation.assetClass }}</span>
+                  <strong>{{ allocation.percentage / 100 | percent: '1.0-0' }}</strong>
+                </div>
+                <div class="allocation-bar">
+                  <div class="allocation-fill" [style.width.%]="allocation.percentage"></div>
+                </div>
+              </div>
+            }
+          </div>
+        </article>
+
+        <app-holding-form
+          [form]="holdingForm"
+          [editing]="editingId() !== null"
+          [saving]="saving()"
+          [errorMessage]="errorMessage()"
+          (submitted)="submitHolding()"
+          (cancelled)="resetForm()"
+        />
+      </section>
+
+      <app-holdings-table
+        [holdings]="data.holdings"
+        [baseCurrency]="data.baseCurrency"
+        [saving]="saving()"
+        (edited)="editHolding($event)"
+        (deleted)="deleteHolding($event)"
+      />
+    </main>
+  }
+}
