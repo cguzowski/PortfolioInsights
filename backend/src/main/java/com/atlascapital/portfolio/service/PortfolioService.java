@@ -1,13 +1,13 @@
 package com.atlascapital.portfolio.service;
 
+import com.atlascapital.common.exception.HoldingNotFoundException;
+import com.atlascapital.common.exception.PortfolioNotFoundException;
 import com.atlascapital.portfolio.dto.AllocationResponse;
 import com.atlascapital.portfolio.dto.PortfolioHoldingRequest;
 import com.atlascapital.portfolio.dto.PortfolioHoldingResponse;
 import com.atlascapital.portfolio.dto.PortfolioSummaryResponse;
-import com.atlascapital.portfolio.exception.HoldingNotFoundException;
-import com.atlascapital.portfolio.exception.PortfolioNotFoundException;
-import com.atlascapital.portfolio.model.PortfolioEntity;
-import com.atlascapital.portfolio.model.PortfolioHoldingEntity;
+import com.atlascapital.portfolio.entity.PortfolioEntity;
+import com.atlascapital.portfolio.entity.PortfolioHoldingEntity;
 import com.atlascapital.portfolio.repository.PortfolioHoldingRepository;
 import com.atlascapital.portfolio.repository.PortfolioRepository;
 import org.springframework.stereotype.Service;

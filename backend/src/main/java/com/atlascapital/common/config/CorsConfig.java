@@ -1,4 +1,4 @@
-package com.atlascapital.portfolio.config;
+package com.atlascapital.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

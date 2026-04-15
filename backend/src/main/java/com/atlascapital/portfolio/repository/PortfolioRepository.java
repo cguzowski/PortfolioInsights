@@ -1,6 +1,6 @@
 package com.atlascapital.portfolio.repository;
 
-import com.atlascapital.portfolio.model.PortfolioEntity;
+import com.atlascapital.portfolio.entity.PortfolioEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

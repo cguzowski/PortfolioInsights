@@ -1,5 +1,6 @@
-package com.atlascapital.portfolio.service;
+package com.atlascapital.portfolio;
 
+import com.atlascapital.portfolio.service.PortfolioService;
 import com.atlascapital.portfolio.dto.PortfolioHoldingRequest;
 import com.atlascapital.portfolio.dto.PortfolioHoldingResponse;
 import com.atlascapital.portfolio.dto.PortfolioSummaryResponse;

@@ -1,12 +1,12 @@
-package com.atlascapital.portfolio;
+package com.atlascapital;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AtlasCapitalIntelligenceApplication {
+public class AtlasCapitalApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AtlasCapitalIntelligenceApplication.class, args);
+        SpringApplication.run(AtlasCapitalApplication.class, args);
     }
 }
