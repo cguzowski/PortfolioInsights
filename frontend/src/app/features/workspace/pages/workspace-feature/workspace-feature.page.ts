@@ -30,6 +30,7 @@ type DraftRowField =
   | 'currentPrice'
   | 'changePercent';
 type GeneratorStrategy = 'random' | 'balanced' | 'growth' | 'income' | 'defensive' | 'inflation';
+type SimulationHorizon = '1d' | '1w' | '1m' | '1y';
 
 interface AllocationTab {
   id: AllocationView;
@@ -75,8 +76,56 @@ interface GeneratorAsset {
   strategies: readonly GeneratorStrategy[];
 }
 
+interface SimulationHorizonOption {
+  id: SimulationHorizon;
+  label: string;
+}
+
+interface SimulationScenario {
+  id: string;
+  label: string;
+  horizon: SimulationHorizon;
+  inflationRate: number;
+  interestRate: number;
+  equityShock: number;
+  rateShock: number;
+  oilShock: number;
+  goldShock: number;
+  usdShock: number;
+  volatilityShock: number;
+  creditShock: number;
+  confidence: number;
+}
+
+interface SimulatedHolding {
+  ticker: string;
+  name: string;
+  assetClass: string;
+  beforeValue: number;
+  afterValue: number;
+  pnl: number;
+  pnlPercent: number;
+}
+
+interface SimulationResult {
+  key: string;
+  portfolio: OverviewPortfolioOption;
+  scenarioLabel: string;
+  beforeValue: number;
+  afterValue: number;
+  pnl: number;
+  pnlPercent: number;
+  drawdownPercent: number;
+  confidence: number;
+  bestHolding: SimulatedHolding | null;
+  worstHolding: SimulatedHolding | null;
+  holdings: readonly SimulatedHolding[];
+  allocationSlices: readonly AllocationSlice[];
+}
+
 const OVERVIEW_PAGE_ID = 'portfolio-overview-dashboard';
 const PORTFOLIO_MANAGER_PAGE_ID = 'portfolio-input-generator';
+const SIMULATIONS_PAGE_ID = 'portfolio-simulations';
 const NEW_PORTFOLIO_KEY = 'new-portfolio';
 
 const ASSET_CLASSES: readonly string[] = ['Equity', 'ETF', 'Bond', 'REIT', 'Commodity', 'Alternative', 'Cash'];
@@ -264,6 +313,120 @@ const GENERATOR_ASSETS: readonly GeneratorAsset[] = [
 
 const GENERATOR_SECTORS: readonly string[] = [...new Set(GENERATOR_ASSETS.map((asset) => asset.sector))].sort();
 
+const SIMULATION_HORIZONS: readonly SimulationHorizonOption[] = [
+  { id: '1d', label: '1 Day' },
+  { id: '1w', label: '1 Week' },
+  { id: '1m', label: '1 Month' },
+  { id: '1y', label: '1 Year' }
+];
+
+const HORIZON_FACTORS: Readonly<Record<SimulationHorizon, number>> = {
+  '1d': 0.12,
+  '1w': 0.26,
+  '1m': 0.55,
+  '1y': 1
+};
+
+const CASH_HORIZON_FACTORS: Readonly<Record<SimulationHorizon, number>> = {
+  '1d': 1 / 252,
+  '1w': 1 / 52,
+  '1m': 1 / 12,
+  '1y': 1
+};
+
+const SIMULATION_SCENARIOS: readonly SimulationScenario[] = [
+  {
+    id: 'great-financial-crisis',
+    label: '2008 Financial Crisis',
+    horizon: '1y',
+    inflationRate: 3.8,
+    interestRate: 0.25,
+    equityShock: -38,
+    rateShock: -3.2,
+    oilShock: -54,
+    goldShock: 5,
+    usdShock: 18,
+    volatilityShock: 48,
+    creditShock: -22,
+    confidence: 82
+  },
+  {
+    id: 'covid-crash',
+    label: 'COVID Liquidity Shock',
+    horizon: '1m',
+    inflationRate: 1.5,
+    interestRate: 0.25,
+    equityShock: -34,
+    rateShock: -1.5,
+    oilShock: -62,
+    goldShock: 3,
+    usdShock: 9,
+    volatilityShock: 65,
+    creditShock: -14,
+    confidence: 78
+  },
+  {
+    id: 'dot-com-bust',
+    label: 'Dot-Com Bust',
+    horizon: '1y',
+    inflationRate: 3.4,
+    interestRate: 6.5,
+    equityShock: -28,
+    rateShock: -1.6,
+    oilShock: -8,
+    goldShock: 2,
+    usdShock: 6,
+    volatilityShock: 34,
+    creditShock: -9,
+    confidence: 76
+  },
+  {
+    id: 'stagflation-1970s',
+    label: '1970s Inflation Shock',
+    horizon: '1y',
+    inflationRate: 11,
+    interestRate: 12,
+    equityShock: -17,
+    rateShock: 4,
+    oilShock: 82,
+    goldShock: 68,
+    usdShock: -8,
+    volatilityShock: 28,
+    creditShock: -8,
+    confidence: 72
+  },
+  {
+    id: 'rate-hike-cycle',
+    label: '2022 Rate Hike Cycle',
+    horizon: '1y',
+    inflationRate: 8,
+    interestRate: 4.5,
+    equityShock: -18,
+    rateShock: 4.2,
+    oilShock: 7,
+    goldShock: -1,
+    usdShock: 8,
+    volatilityShock: 31,
+    creditShock: -11,
+    confidence: 80
+  },
+  {
+    id: 'oil-shock',
+    label: 'Oil Shock',
+    horizon: '1m',
+    inflationRate: 6.5,
+    interestRate: 5.25,
+    equityShock: -12,
+    rateShock: 1,
+    oilShock: 70,
+    goldShock: 12,
+    usdShock: -3,
+    volatilityShock: 24,
+    creditShock: -6,
+    confidence: 74
+  }
+];
+
 @Component({
   selector: 'app-workspace-feature-page',
   standalone: true,
@@ -290,12 +453,15 @@ export class WorkspaceFeaturePageComponent {
 
   protected readonly isOverviewPage = computed(() => this.page().id === OVERVIEW_PAGE_ID);
   protected readonly isPortfolioManagerPage = computed(() => this.page().id === PORTFOLIO_MANAGER_PAGE_ID);
+  protected readonly isSimulationsPage = computed(() => this.page().id === SIMULATIONS_PAGE_ID);
   protected readonly allocationTabs = ALLOCATION_TABS;
   protected readonly assetClasses = ASSET_CLASSES;
   protected readonly riskProfiles = RISK_PROFILES;
   protected readonly portfolioManagerTabs = PORTFOLIO_MANAGER_TABS;
   protected readonly generatorStrategies = GENERATOR_STRATEGIES;
   protected readonly generatorSectors = GENERATOR_SECTORS;
+  protected readonly simulationScenarios = SIMULATION_SCENARIOS;
+  protected readonly simulationHorizons = SIMULATION_HORIZONS;
   protected readonly newPortfolioKey = NEW_PORTFOLIO_KEY;
   protected readonly selectedAllocationView = signal<AllocationView>('assetClass');
   protected readonly selectedManagerTab = signal<PortfolioManagerTab>('manual');
@@ -326,8 +492,40 @@ export class WorkspaceFeaturePageComponent {
   protected readonly generatorAssetCount = signal(8);
   protected readonly generatorPortfolioValue = signal(100000);
   protected readonly selectedGeneratorSectors = signal<readonly string[]>([]);
+  protected readonly portfolioToAddKey = signal('');
+  protected readonly selectedSimulationPortfolioKeys = signal<readonly string[]>([]);
+  protected readonly simulationResults = signal<readonly SimulationResult[]>([]);
+  protected readonly simulationHasRun = signal(false);
+  protected readonly simulationStatus = signal('');
+  protected readonly selectedScenarioId = signal(SIMULATION_SCENARIOS[0].id);
+  protected readonly scenarioHorizon = signal<SimulationHorizon>(SIMULATION_SCENARIOS[0].horizon);
+  protected readonly scenarioInflationRate = signal(SIMULATION_SCENARIOS[0].inflationRate);
+  protected readonly scenarioInterestRate = signal(SIMULATION_SCENARIOS[0].interestRate);
+  protected readonly scenarioEquityShock = signal(SIMULATION_SCENARIOS[0].equityShock);
+  protected readonly scenarioRateShock = signal(SIMULATION_SCENARIOS[0].rateShock);
+  protected readonly scenarioOilShock = signal(SIMULATION_SCENARIOS[0].oilShock);
+  protected readonly scenarioGoldShock = signal(SIMULATION_SCENARIOS[0].goldShock);
+  protected readonly scenarioUsdShock = signal(SIMULATION_SCENARIOS[0].usdShock);
+  protected readonly scenarioVolatilityShock = signal(SIMULATION_SCENARIOS[0].volatilityShock);
+  protected readonly scenarioCreditShock = signal(SIMULATION_SCENARIOS[0].creditShock);
   protected readonly selectedOverviewSummary = computed(() => this.portfolioContext.selectedSummary());
   protected readonly selectedOverviewSourceLabel = computed(() => this.portfolioContext.selectedSourceLabel());
+  protected readonly selectedSimulationPortfolios = computed<readonly OverviewPortfolioOption[]>(() => {
+    const portfolioOptions = this.portfolioContext.portfolioOptions();
+    return this.selectedSimulationPortfolioKeys()
+      .map((portfolioKey) => portfolioOptions.find((option) => option.key === portfolioKey))
+      .filter((option): option is OverviewPortfolioOption => option !== undefined);
+  });
+  protected readonly availableSimulationPortfolioOptions = computed<readonly OverviewPortfolioOption[]>(() => {
+    const selectedKeys = new Set(this.selectedSimulationPortfolioKeys());
+    return this.portfolioContext.portfolioOptions().filter((option) => !selectedKeys.has(option.key));
+  });
+  protected readonly selectedScenarioLabel = computed(() => {
+    return (
+      SIMULATION_SCENARIOS.find((scenario) => scenario.id === this.selectedScenarioId())?.label ??
+      'Custom Scenario'
+    );
+  });
   protected readonly draftRowsTotal = computed(() =>
     roundCurrency(this.draftRows().reduce((sum, row) => sum + this.marketValue(row), 0))
   );
@@ -418,6 +616,68 @@ export class WorkspaceFeaturePageComponent {
     this.selectedManagerTab.set(tab);
   }
 
+  protected addPortfolioToSimulation(portfolioKey: string): void {
+    if (!portfolioKey) {
+      return;
+    }
+
+    this.selectedSimulationPortfolioKeys.update((portfolioKeys) =>
+      portfolioKeys.includes(portfolioKey) ? portfolioKeys : [...portfolioKeys, portfolioKey]
+    );
+    this.portfolioToAddKey.set('');
+    this.simulationResults.set([]);
+    this.simulationHasRun.set(false);
+    this.simulationStatus.set('');
+  }
+
+  protected removePortfolioFromSimulation(portfolioKey: string): void {
+    this.selectedSimulationPortfolioKeys.update((portfolioKeys) =>
+      portfolioKeys.filter((selectedKey) => selectedKey !== portfolioKey)
+    );
+    this.simulationResults.update((results) => results.filter((result) => result.key !== portfolioKey));
+    this.simulationStatus.set('');
+  }
+
+  protected selectSimulationScenario(scenarioId: string): void {
+    const scenario = SIMULATION_SCENARIOS.find((candidate) => candidate.id === scenarioId) ?? SIMULATION_SCENARIOS[0];
+    this.selectedScenarioId.set(scenario.id);
+    this.scenarioHorizon.set(scenario.horizon);
+    this.scenarioInflationRate.set(scenario.inflationRate);
+    this.scenarioInterestRate.set(scenario.interestRate);
+    this.scenarioEquityShock.set(scenario.equityShock);
+    this.scenarioRateShock.set(scenario.rateShock);
+    this.scenarioOilShock.set(scenario.oilShock);
+    this.scenarioGoldShock.set(scenario.goldShock);
+    this.scenarioUsdShock.set(scenario.usdShock);
+    this.scenarioVolatilityShock.set(scenario.volatilityShock);
+    this.scenarioCreditShock.set(scenario.creditShock);
+    this.simulationStatus.set('');
+  }
+
+  protected setSimulationHorizon(value: string): void {
+    if (SIMULATION_HORIZONS.some((horizon) => horizon.id === value)) {
+      this.scenarioHorizon.set(value as SimulationHorizon);
+    }
+  }
+
+  protected simulatePortfolios(): void {
+    const portfolios = this.selectedSimulationPortfolios();
+
+    if (!portfolios.length) {
+      this.simulationStatus.set('Add at least one portfolio before running a simulation.');
+      this.simulationResults.set([]);
+      this.simulationHasRun.set(false);
+      return;
+    }
+
+    const results = portfolios.map((portfolio) => this.buildSimulationResult(portfolio));
+    this.simulationResults.set(results);
+    this.simulationHasRun.set(true);
+    this.simulationStatus.set(
+      `${results.length} ${results.length === 1 ? 'portfolio' : 'portfolios'} simulated under ${this.selectedScenarioLabel()}.`
+    );
+  }
+
   protected selectManagedPortfolio(portfolioKey: string): void {
     this.selectedManagedPortfolioKey.set(portfolioKey);
     this.uploadStatus.set('');
@@ -491,6 +751,22 @@ export class WorkspaceFeaturePageComponent {
   protected rowWeight(row: DraftHoldingRow): number {
     const total = this.draftRowsTotal();
     return total > 0 ? this.marketValue(row) / total : 0;
+  }
+
+  protected portfolioAllocationSlices(option: OverviewPortfolioOption): readonly AllocationSlice[] {
+    return this.buildPortfolioAllocationSlices(option.summary.holdings);
+  }
+
+  protected portfolioPieGradient(option: OverviewPortfolioOption): string {
+    return this.gradientForSlices(this.portfolioAllocationSlices(option));
+  }
+
+  protected simulationPieGradient(result: SimulationResult): string {
+    return this.gradientForSlices(result.allocationSlices);
+  }
+
+  protected changeClass(value: number): string {
+    return value >= 0 ? 'positive' : 'negative';
   }
 
   protected handlePortfolioFileUpload(event: Event): void {
@@ -697,6 +973,170 @@ export class WorkspaceFeaturePageComponent {
           this.managerStatus.set('Unable to update portfolio. Confirm the API is running and the portfolio still exists.');
         }
       });
+  }
+
+  private buildSimulationResult(portfolio: OverviewPortfolioOption): SimulationResult {
+    const holdings = portfolio.summary.holdings.map((holding) => {
+      const shockPercent = this.calculateHoldingShock(portfolio, holding);
+      const afterValue = roundCurrency(Math.max(0, holding.marketValue * (1 + shockPercent / 100)));
+      const pnl = roundCurrency(afterValue - holding.marketValue);
+
+      return {
+        ticker: holding.ticker,
+        name: holding.name,
+        assetClass: holding.assetClass,
+        beforeValue: holding.marketValue,
+        afterValue,
+        pnl,
+        pnlPercent: holding.marketValue > 0 ? roundTo((pnl / holding.marketValue) * 100, 2) : 0
+      };
+    });
+    const cashAfter = roundCurrency(
+      portfolio.summary.cashBalance *
+        (1 + (this.scenarioInterestRate() / 100) * CASH_HORIZON_FACTORS[this.scenarioHorizon()])
+    );
+    const holdingsAfter = holdings.reduce((sum, holding) => sum + holding.afterValue, 0);
+    const afterValue = roundCurrency(holdingsAfter + cashAfter);
+    const beforeValue = portfolio.summary.totalValue;
+    const pnl = roundCurrency(afterValue - beforeValue);
+    const pnlPercent = beforeValue > 0 ? roundTo((pnl / beforeValue) * 100, 2) : 0;
+    const sortedHoldings = [...holdings].sort((left, right) => right.pnlPercent - left.pnlPercent);
+    const horizonFactor = HORIZON_FACTORS[this.scenarioHorizon()];
+
+    return {
+      key: portfolio.key,
+      portfolio,
+      scenarioLabel: this.selectedScenarioLabel(),
+      beforeValue,
+      afterValue,
+      pnl,
+      pnlPercent,
+      drawdownPercent: roundTo(
+        clamp(Math.max(0, -pnlPercent * 1.15 + this.scenarioVolatilityShock() * horizonFactor * 0.18), 0, 95),
+        2
+      ),
+      confidence: roundTo(
+        clamp(
+          (SIMULATION_SCENARIOS.find((scenario) => scenario.id === this.selectedScenarioId())?.confidence ?? 68) -
+            Math.abs(this.scenarioVolatilityShock()) * 0.08,
+          35,
+          92
+        ),
+        0
+      ),
+      bestHolding: sortedHoldings[0] ?? null,
+      worstHolding: sortedHoldings[sortedHoldings.length - 1] ?? null,
+      holdings,
+      allocationSlices: this.buildSimulatedAllocationSlices(holdings)
+    };
+  }
+
+  private calculateHoldingShock(portfolio: OverviewPortfolioOption, holding: PortfolioHolding): number {
+    const classification = portfolio.classifications[holding.ticker];
+    const sector = classification?.sector ?? holding.assetClass;
+    const assetClass = holding.assetClass.toLowerCase();
+    const normalizedSector = sector.toLowerCase();
+    const inflationPressure = Math.max(0, this.scenarioInflationRate() - 3);
+    let shock = 0;
+
+    if (assetClass.includes('bond')) {
+      shock = -this.scenarioRateShock() * 3.1 + this.scenarioCreditShock() * 0.45 - inflationPressure * 0.45;
+    } else if (assetClass.includes('reit')) {
+      shock = this.scenarioEquityShock() * 0.7 - this.scenarioRateShock() * 4 + inflationPressure * 0.2;
+    } else if (assetClass.includes('commodity')) {
+      shock = this.scenarioOilShock() * 0.25 + this.scenarioGoldShock() * 0.45 + inflationPressure * 0.8;
+    } else if (assetClass.includes('alternative')) {
+      shock =
+        this.scenarioEquityShock() * 1.1 -
+        this.scenarioUsdShock() * 0.65 +
+        this.scenarioVolatilityShock() * 0.16;
+    } else if (assetClass.includes('etf')) {
+      shock = this.scenarioEquityShock() * 0.82 + this.scenarioCreditShock() * 0.08;
+    } else {
+      shock = this.scenarioEquityShock();
+    }
+
+    if (
+      normalizedSector.includes('technology') ||
+      normalizedSector.includes('semiconductor') ||
+      normalizedSector.includes('e-commerce')
+    ) {
+      shock += this.scenarioEquityShock() * 0.22 - this.scenarioRateShock() * 1.7;
+    }
+
+    if (normalizedSector.includes('healthcare') || normalizedSector.includes('consumer staples')) {
+      shock -= this.scenarioEquityShock() * 0.35;
+    }
+
+    if (normalizedSector.includes('energy')) {
+      shock += this.scenarioOilShock() * 0.42 + inflationPressure * 0.3;
+    }
+
+    if (normalizedSector.includes('fixed income') || normalizedSector.includes('corporate bond')) {
+      shock += this.scenarioCreditShock() * 0.35;
+    }
+
+    if (normalizedSector.includes('real estate')) {
+      shock -= this.scenarioRateShock() * 1.8;
+    }
+
+    if (normalizedSector.includes('digital asset')) {
+      shock += this.scenarioEquityShock() * 0.55 - this.scenarioUsdShock() * 0.55;
+    }
+
+    if (holding.ticker === 'GLD' || normalizedSector.includes('commodities')) {
+      shock += this.scenarioGoldShock() * 0.5 - this.scenarioUsdShock() * 0.18;
+    }
+
+    return roundTo(clamp(shock * HORIZON_FACTORS[this.scenarioHorizon()], -90, 180), 2);
+  }
+
+  private buildPortfolioAllocationSlices(holdings: readonly PortfolioHolding[]): readonly AllocationSlice[] {
+    const totals = new Map<string, number>();
+    const totalValue = holdings.reduce((sum, holding) => sum + holding.marketValue, 0);
+
+    for (const holding of holdings) {
+      totals.set(holding.assetClass, (totals.get(holding.assetClass) ?? 0) + holding.marketValue);
+    }
+
+    return this.toAllocationSlices(totals, totalValue);
+  }
+
+  private buildSimulatedAllocationSlices(holdings: readonly SimulatedHolding[]): readonly AllocationSlice[] {
+    const totals = new Map<string, number>();
+    const totalValue = holdings.reduce((sum, holding) => sum + holding.afterValue, 0);
+
+    for (const holding of holdings) {
+      totals.set(holding.assetClass, (totals.get(holding.assetClass) ?? 0) + holding.afterValue);
+    }
+
+    return this.toAllocationSlices(totals, totalValue);
+  }
+
+  private toAllocationSlices(totals: ReadonlyMap<string, number>, totalValue: number): readonly AllocationSlice[] {
+    return [...totals.entries()]
+      .map(([label, value], index) => ({
+        label,
+        value: roundCurrency(value),
+        percentage: totalValue > 0 ? roundTo((value / totalValue) * 100, 2) : 0,
+        color: PIE_COLORS[index % PIE_COLORS.length]
+      }))
+      .sort((left, right) => right.value - left.value);
+  }
+
+  private gradientForSlices(slices: readonly AllocationSlice[]): string {
+    if (!slices.length) {
+      return 'conic-gradient(#d7ddd4 0% 100%)';
+    }
+
+    let currentStop = 0;
+    const segments = slices.map((slice) => {
+      const start = currentStop;
+      currentStop += slice.percentage;
+      return `${slice.color} ${start.toFixed(2)}% ${currentStop.toFixed(2)}%`;
+    });
+
+    return `conic-gradient(${segments.join(', ')})`;
   }
 
   protected asPercent(value: number): number {

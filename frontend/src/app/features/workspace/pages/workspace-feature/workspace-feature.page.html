@@ -429,6 +429,298 @@
             }
           </article>
         </section>
+      } @else if (isSimulationsPage()) {
+        <section class="simulation-workbench" aria-label="Portfolio simulations">
+          <article class="feature-card simulation-column">
+            <header>
+              <h2>Before</h2>
+            </header>
+
+            <label class="simulation-select">
+              Add Portfolio To Track
+              <select
+                name="portfolioToSimulate"
+                [ngModel]="portfolioToAddKey()"
+                (ngModelChange)="addPortfolioToSimulation($event)"
+              >
+                <option value="">Select portfolio</option>
+                @for (option of availableSimulationPortfolioOptions(); track option.key) {
+                  <option [value]="option.key">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+
+            @if (portfolioContext.databasePortfolioLoading()) {
+              <p class="manager-status">Syncing database portfolios...</p>
+            } @else if (portfolioContext.databasePortfolioError()) {
+              <p class="manager-status">{{ portfolioContext.databasePortfolioError() }}</p>
+            }
+
+            <div class="simulation-stack">
+              @for (portfolio of selectedSimulationPortfolios(); track portfolio.key) {
+                <article class="simulation-portfolio-card">
+                  <div class="simulation-card-header">
+                    <div>
+                      <span>{{ portfolio.source === 'database' ? 'Database' : 'Mock' }}</span>
+                      <h3>{{ portfolio.summary.portfolioName }}</h3>
+                    </div>
+                    <button type="button" class="ghost-action" (click)="removePortfolioFromSimulation(portfolio.key)">
+                      Remove
+                    </button>
+                  </div>
+
+                  <div class="simulation-mini-metrics">
+                    <span>
+                      Value
+                      <strong>{{ portfolio.summary.totalValue | currency: portfolio.summary.baseCurrency : 'symbol' : '1.0-0' }}</strong>
+                    </span>
+                    <span>
+                      Risk
+                      <strong>{{ portfolio.summary.riskProfile }}</strong>
+                    </span>
+                    <span>
+                      Assets
+                      <strong>{{ portfolio.summary.holdings.length }}</strong>
+                    </span>
+                  </div>
+
+                  <div class="simulation-pie-row">
+                    <div class="simulation-pie" [style.background]="portfolioPieGradient(portfolio)"></div>
+                    <ul class="simulation-allocation-list">
+                      @for (slice of portfolioAllocationSlices(portfolio); track slice.label) {
+                        <li>
+                          <span class="swatch" [style.background]="slice.color"></span>
+                          <strong>{{ slice.label }}</strong>
+                          <small>{{ asPercent(slice.percentage) | percent: '1.1-1' }}</small>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                </article>
+              } @empty {
+                <p class="empty-rows">No portfolios selected.</p>
+              }
+            </div>
+          </article>
+
+          <article class="feature-card simulation-column scenario-column">
+            <header>
+              <h2>Scenario</h2>
+            </header>
+
+            <label class="simulation-select">
+              Historical Scenario
+              <select
+                name="simulationScenario"
+                [ngModel]="selectedScenarioId()"
+                (ngModelChange)="selectSimulationScenario($event)"
+              >
+                @for (scenario of simulationScenarios; track scenario.id) {
+                  <option [value]="scenario.id">{{ scenario.label }}</option>
+                }
+              </select>
+            </label>
+
+            <div class="scenario-fields">
+              <label>
+                Time
+                <select
+                  name="scenarioHorizon"
+                  [ngModel]="scenarioHorizon()"
+                  (ngModelChange)="setSimulationHorizon($event)"
+                >
+                  @for (horizon of simulationHorizons; track horizon.id) {
+                    <option [value]="horizon.id">{{ horizon.label }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                Inflation %
+                <input
+                  name="scenarioInflationRate"
+                  type="number"
+                  step="0.1"
+                  [ngModel]="scenarioInflationRate()"
+                  (ngModelChange)="scenarioInflationRate.set(toFiniteInput($event))"
+                />
+              </label>
+              <label>
+                Interest Rate %
+                <input
+                  name="scenarioInterestRate"
+                  type="number"
+                  step="0.1"
+                  [ngModel]="scenarioInterestRate()"
+                  (ngModelChange)="scenarioInterestRate.set(toFiniteInput($event))"
+                />
+              </label>
+              <label>
+                Equity Shock %
+                <input
+                  name="scenarioEquityShock"
+                  type="number"
+                  step="0.5"
+                  [ngModel]="scenarioEquityShock()"
+                  (ngModelChange)="scenarioEquityShock.set(toFiniteInput($event))"
+                />
+              </label>
+              <label>
+                Rate Move
+                <input
+                  name="scenarioRateShock"
+                  type="number"
+                  step="0.1"
+                  [ngModel]="scenarioRateShock()"
+                  (ngModelChange)="scenarioRateShock.set(toFiniteInput($event))"
+                />
+              </label>
+              <label>
+                Oil Shock %
+                <input
+                  name="scenarioOilShock"
+                  type="number"
+                  step="0.5"
+                  [ngModel]="scenarioOilShock()"
+                  (ngModelChange)="scenarioOilShock.set(toFiniteInput($event))"
+                />
+              </label>
+              <label>
+                Gold Shock %
+                <input
+                  name="scenarioGoldShock"
+                  type="number"
+                  step="0.5"
+                  [ngModel]="scenarioGoldShock()"
+                  (ngModelChange)="scenarioGoldShock.set(toFiniteInput($event))"
+                />
+              </label>
+              <label>
+                USD Shock %
+                <input
+                  name="scenarioUsdShock"
+                  type="number"
+                  step="0.5"
+                  [ngModel]="scenarioUsdShock()"
+                  (ngModelChange)="scenarioUsdShock.set(toFiniteInput($event))"
+                />
+              </label>
+              <label>
+                Volatility
+                <input
+                  name="scenarioVolatilityShock"
+                  type="number"
+                  step="1"
+                  [ngModel]="scenarioVolatilityShock()"
+                  (ngModelChange)="scenarioVolatilityShock.set(toFiniteInput($event))"
+                />
+              </label>
+              <label>
+                Credit Stress %
+                <input
+                  name="scenarioCreditShock"
+                  type="number"
+                  step="0.5"
+                  [ngModel]="scenarioCreditShock()"
+                  (ngModelChange)="scenarioCreditShock.set(toFiniteInput($event))"
+                />
+              </label>
+            </div>
+
+            <div class="scenario-actions">
+              <button type="button" class="primary-action" (click)="simulatePortfolios()">Simulate</button>
+              @if (simulationStatus()) {
+                <p class="manager-status">{{ simulationStatus() }}</p>
+              }
+            </div>
+          </article>
+
+          <article class="feature-card simulation-column">
+            <header>
+              <h2>After</h2>
+            </header>
+
+            <div class="simulation-stack">
+              @if (simulationHasRun()) {
+                @for (result of simulationResults(); track result.key) {
+                  <article class="simulation-result-card">
+                    <div class="simulation-card-header">
+                      <div>
+                        <span>{{ result.scenarioLabel }}</span>
+                        <h3>{{ result.portfolio.summary.portfolioName }}</h3>
+                      </div>
+                      <strong
+                        class="result-change"
+                        [class.positive]="result.pnl >= 0"
+                        [class.negative]="result.pnl < 0"
+                      >
+                        {{ result.pnl | currency: result.portfolio.summary.baseCurrency : 'symbol' : '1.0-0' }}
+                      </strong>
+                    </div>
+
+                    <div class="simulation-mini-metrics">
+                      <span>
+                        After Value
+                        <strong>{{ result.afterValue | currency: result.portfolio.summary.baseCurrency : 'symbol' : '1.0-0' }}</strong>
+                      </span>
+                      <span>
+                        P&amp;L
+                        <strong [class.positive]="result.pnlPercent >= 0" [class.negative]="result.pnlPercent < 0">
+                          {{ asPercent(result.pnlPercent) | percent: '1.1-1' }}
+                        </strong>
+                      </span>
+                      <span>
+                        Drawdown
+                        <strong>{{ asPercent(result.drawdownPercent) | percent: '1.1-1' }}</strong>
+                      </span>
+                      <span>
+                        Confidence
+                        <strong>{{ asPercent(result.confidence) | percent: '1.0-0' }}</strong>
+                      </span>
+                    </div>
+
+                    <div class="simulation-pie-row">
+                      <div class="simulation-pie" [style.background]="simulationPieGradient(result)"></div>
+                      <ul class="simulation-allocation-list">
+                        @for (slice of result.allocationSlices; track slice.label) {
+                          <li>
+                            <span class="swatch" [style.background]="slice.color"></span>
+                            <strong>{{ slice.label }}</strong>
+                            <small>{{ asPercent(slice.percentage) | percent: '1.1-1' }}</small>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+
+                    <div class="impact-grid">
+                      <article>
+                        <span>Best</span>
+                        <strong>{{ result.bestHolding?.ticker ?? 'N/A' }}</strong>
+                        <small
+                          [class.positive]="(result.bestHolding?.pnlPercent ?? 0) >= 0"
+                          [class.negative]="(result.bestHolding?.pnlPercent ?? 0) < 0"
+                        >
+                          {{ asPercent(result.bestHolding?.pnlPercent ?? 0) | percent: '1.1-1' }}
+                        </small>
+                      </article>
+                      <article>
+                        <span>Worst</span>
+                        <strong>{{ result.worstHolding?.ticker ?? 'N/A' }}</strong>
+                        <small
+                          [class.positive]="(result.worstHolding?.pnlPercent ?? 0) >= 0"
+                          [class.negative]="(result.worstHolding?.pnlPercent ?? 0) < 0"
+                        >
+                          {{ asPercent(result.worstHolding?.pnlPercent ?? 0) | percent: '1.1-1' }}
+                        </small>
+                      </article>
+                    </div>
+                  </article>
+                }
+              } @else {
+                <p class="empty-rows">No simulation results yet.</p>
+              }
+            </div>
+          </article>
+        </section>
       } @else {
         @for (card of featurePage.cards; track card.title) {
           <article class="feature-card">
@@ -447,18 +739,20 @@
       }
     </section>
 
-    <section class="prompt-panel">
-      <div class="prompt-copy">
-        <h2>AI Prompt Starters</h2>
-        <p>{{ featurePage.chatCallout }}</p>
-      </div>
-      <div class="prompt-actions">
-        @for (prompt of featurePage.chatPrompts; track prompt) {
-          <button type="button" (click)="openChatPrompt(prompt)">
-            {{ prompt }}
-          </button>
-        }
-      </div>
-    </section>
+    @if (!isSimulationsPage()) {
+      <section class="prompt-panel">
+        <div class="prompt-copy">
+          <h2>AI Prompt Starters</h2>
+          <p>{{ featurePage.chatCallout }}</p>
+        </div>
+        <div class="prompt-actions">
+          @for (prompt of featurePage.chatPrompts; track prompt) {
+            <button type="button" (click)="openChatPrompt(prompt)">
+              {{ prompt }}
+            </button>
+          }
+        </div>
+      </section>
+    }
   </main>
 }
