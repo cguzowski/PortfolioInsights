@@ -2,3 +2,170 @@
   display: block;
   min-height: 100vh;
 }
+
+.shell {
+  min-height: 100vh;
+  padding: clamp(1rem, 2vw, 1.6rem);
+  padding-bottom: 5.8rem;
+  position: relative;
+  overflow: hidden;
+  color: var(--text-body);
+}
+
+.topbar {
+  position: sticky;
+  top: 0.8rem;
+  z-index: 8;
+  display: grid;
+  gap: 1rem;
+  padding: 0.95rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: rgba(3, 7, 18, 0.94);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-panel);
+}
+
+.topbar-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(15rem, 0.95fr);
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.brand-block p {
+  margin: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-green);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.brand-block h1 {
+  margin: 0.35rem 0 0;
+  color: var(--text-strong);
+  font-family: "Fraunces", "Baskerville Old Face", serif;
+  font-size: clamp(1.35rem, 2.5vw, 2.2rem);
+}
+
+.session-card {
+  padding: 0.7rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px rgba(248, 250, 252, 0.03);
+}
+
+.session-eyebrow {
+  margin: 0;
+  color: var(--accent-blue);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.session-card h2 {
+  margin: 0.28rem 0 0;
+  color: var(--text-strong);
+  font-family: "Fraunces", "Baskerville Old Face", serif;
+  font-size: 1.4rem;
+}
+
+.session-card label {
+  display: block;
+  margin-top: 0.58rem;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.session-card select {
+  width: 100%;
+  margin-top: 0.34rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text-strong);
+  padding: 0.46rem 0.54rem;
+}
+
+.session-note {
+  margin: 0.42rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.session-note.error {
+  color: var(--danger);
+}
+
+.session-note button {
+  margin-left: 0.35rem;
+  border: 1px solid rgba(255, 138, 128, 0.58);
+  border-radius: 6px;
+  background: rgba(255, 138, 128, 0.12);
+  color: #ffd6d2;
+  cursor: pointer;
+  padding: 0.12rem 0.4rem;
+  font-size: 0.7rem;
+}
+
+.page-nav {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
+}
+
+.page-nav a {
+  flex: none;
+  display: grid;
+  gap: 0.1rem;
+  text-decoration: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-2);
+  padding: 0.5rem 0.62rem;
+  color: var(--text-strong);
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.page-nav a:hover {
+  transform: translateY(-1px);
+  border-color: rgba(110, 231, 183, 0.62);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
+}
+
+.page-nav a.is-active {
+  background: var(--accent-green);
+  border-color: rgba(110, 231, 183, 0.95);
+  color: #02100c;
+}
+
+.page-nav span {
+  font-weight: 700;
+}
+
+.page-nav small {
+  font-size: 0.69rem;
+  color: var(--text-muted);
+}
+
+.page-nav a.is-active small {
+  color: #042016;
+}
+
+.content-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 84rem;
+  margin: 1rem auto 0;
+}
+
+@media (max-width: 980px) {
+  .topbar-main {
+    grid-template-columns: 1fr;
+  }
+}

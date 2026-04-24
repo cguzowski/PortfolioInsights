@@ -1,0 +1,464 @@
+@if (page(); as featurePage) {
+  <main class="feature-page">
+    <section class="cards-grid" aria-label="Supporting features">
+      @if (isOverviewPage()) {
+        @if (selectedOverviewSummary(); as selectedPortfolio) {
+          <article class="feature-card overview-snapshot-card">
+            <header>
+              <h2>Portfolio Overview Dashboard</h2>
+              <p>Summary lens for the currently selected portfolio from the global top card.</p>
+            </header>
+
+            <p class="source-pill">{{ selectedOverviewSourceLabel() }}</p>
+
+            @if (portfolioContext.databasePortfolioError()) {
+              <p class="sync-note error">{{ portfolioContext.databasePortfolioError() }}</p>
+            } @else if (portfolioContext.databasePortfolioLoading()) {
+              <p class="sync-note">Syncing database portfolio...</p>
+            }
+
+            <div class="overview-meta-grid">
+              <article>
+                <span>Portfolio</span>
+                <strong>{{ selectedPortfolio.portfolioName }}</strong>
+              </article>
+              <article>
+                <span>Total Value</span>
+                <strong>{{ selectedPortfolio.totalValue | currency: selectedPortfolio.baseCurrency : 'symbol' : '1.0-0' }}</strong>
+              </article>
+              <article>
+                <span>Risk Profile</span>
+                <strong>{{ selectedPortfolio.riskProfile }}</strong>
+              </article>
+              <article>
+                <span>Positions</span>
+                <strong>{{ selectedPortfolio.holdings.length }}</strong>
+              </article>
+              <article>
+                <span>Daily P&amp;L</span>
+                <strong>{{ selectedPortfolio.dailyPnl | currency: selectedPortfolio.baseCurrency : 'symbol' : '1.0-0' }}</strong>
+              </article>
+              <article>
+                <span>Updated</span>
+                <strong>{{ selectedPortfolio.lastUpdated | date: 'MMM d, HH:mm' }}</strong>
+              </article>
+            </div>
+          </article>
+        }
+
+        @if (overviewAllocationCard(); as allocationCard) {
+          <article class="feature-card">
+            <header>
+              <h2>{{ allocationCard.title }}</h2>
+              <p>{{ allocationCard.context }}</p>
+            </header>
+
+            <div class="allocation-tabs" role="tablist" aria-label="Allocation views">
+              @for (tab of allocationTabs; track tab.id) {
+                <button
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="selectedAllocationView() === tab.id"
+                  [class.active]="selectedAllocationView() === tab.id"
+                  (click)="selectAllocationView(tab.id)"
+                >
+                  {{ tab.label }}
+                </button>
+              }
+            </div>
+
+            @if (allocationSlices().length) {
+              <div class="allocation-visual">
+                <div class="pie-wrap">
+                  <div class="pie-chart" [style.background]="allocationPieGradient()"></div>
+                  <div class="pie-center">
+                    <span>{{ selectedAllocationLabel() }}</span>
+                    <strong>{{ selectedOverviewSummary().holdings.length }} Assets</strong>
+                  </div>
+                </div>
+
+                <ul class="allocation-legend">
+                  @for (slice of allocationSlices(); track slice.label) {
+                    <li>
+                      <span class="swatch" [style.background]="slice.color"></span>
+                      <div class="legend-copy">
+                        <strong>{{ slice.label }}</strong>
+                        <small>{{ asPercent(slice.percentage) | percent: '1.1-1' }}</small>
+                      </div>
+                      <span>
+                        {{ slice.value | currency: selectedOverviewSummary().baseCurrency : 'symbol' : '1.0-0' }}
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            } @else {
+              <p class="allocation-empty">No holdings available to visualize.</p>
+            }
+            <p class="mvp-note">{{ allocationCard.mvpNote }}</p>
+          </article>
+        }
+
+        @for (card of overviewSupportingCards(); track card.title) {
+          <article class="feature-card">
+            <header>
+              <h2>{{ card.title }}</h2>
+              <p>{{ card.context }}</p>
+            </header>
+            <ul>
+              @for (detail of card.details; track detail) {
+                <li>{{ detail }}</li>
+              }
+            </ul>
+            <p class="mvp-note">{{ card.mvpNote }}</p>
+          </article>
+        }
+      } @else if (isPortfolioManagerPage()) {
+        <section class="portfolio-manager" aria-label="Portfolio manager">
+          <nav class="manager-tabs" role="tablist" aria-label="Portfolio manager modes">
+            @for (tab of portfolioManagerTabs; track tab.id) {
+              <button
+                type="button"
+                role="tab"
+                [attr.aria-selected]="selectedManagerTab() === tab.id"
+                [class.active]="selectedManagerTab() === tab.id"
+                (click)="selectManagerTab(tab.id)"
+              >
+                <span>{{ tab.label }}</span>
+                <small>{{ tab.hint }}</small>
+              </button>
+            }
+          </nav>
+
+          @if (selectedManagerTab() === 'manual') {
+            <article class="feature-card manager-panel">
+              <header>
+                <h2>Manual Input</h2>
+                <p>Create a new portfolio or load an existing one, then add, edit, duplicate, delete, or upload holdings.</p>
+              </header>
+
+              <div class="manager-controls">
+                <label>
+                  Portfolio
+                  <select
+                    name="managedPortfolio"
+                    [ngModel]="selectedManagedPortfolioKey()"
+                    (ngModelChange)="selectManagedPortfolio($event)"
+                  >
+                    <option [value]="newPortfolioKey">New Portfolio</option>
+                    @for (option of portfolioContext.portfolioOptions(); track option.key) {
+                      <option [value]="option.key">{{ option.label }}</option>
+                    }
+                  </select>
+                </label>
+
+                <button type="button" class="ghost-action" (click)="portfolioFileInput.click()">Upload CSV / JSON / XML</button>
+                <input
+                  #portfolioFileInput
+                  class="sr-only-file"
+                  type="file"
+                  accept=".csv,.json,.xml,text/csv,application/json,application/xml,text/xml"
+                  (change)="handlePortfolioFileUpload($event)"
+                />
+              </div>
+
+              <div class="portfolio-meta-grid">
+                <label>
+                  Portfolio Name
+                  <input
+                    name="draftPortfolioName"
+                    type="text"
+                    [ngModel]="draftPortfolioName()"
+                    (ngModelChange)="draftPortfolioName.set($event)"
+                  />
+                </label>
+                <label>
+                  Base Currency
+                  <input
+                    name="draftBaseCurrency"
+                    type="text"
+                    maxlength="3"
+                    [ngModel]="draftBaseCurrency()"
+                    (ngModelChange)="draftBaseCurrency.set($event.toUpperCase())"
+                  />
+                </label>
+                <label>
+                  Cash Balance
+                  <input
+                    name="draftCashBalance"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    [ngModel]="draftCashBalance()"
+                    (ngModelChange)="draftCashBalance.set(toFiniteInput($event))"
+                  />
+                </label>
+                <label>
+                  Risk Profile
+                  <select
+                    name="draftRiskProfile"
+                    [ngModel]="draftRiskProfile()"
+                    (ngModelChange)="draftRiskProfile.set($event)"
+                  >
+                    @for (profile of riskProfiles; track profile) {
+                      <option [value]="profile">{{ profile }}</option>
+                    }
+                  </select>
+                </label>
+              </div>
+
+              <div class="manager-actions">
+                <button type="button" class="primary-action" (click)="addDraftRow()">Add Row</button>
+                <button type="button" class="ghost-action" (click)="clearDraftRows()">Clear Rows</button>
+                <button
+                  type="button"
+                  class="primary-action"
+                  (click)="savePortfolio()"
+                  [disabled]="portfolioSaving() || portfolioDeleting()"
+                >
+                  {{ portfolioSaving() ? portfolioSavingLabel() : portfolioSaveActionLabel() }}
+                </button>
+                @if (isManagedDatabasePortfolio()) {
+                  <button
+                    type="button"
+                    class="danger-action"
+                    (click)="deleteManagedPortfolio()"
+                    [disabled]="portfolioSaving() || portfolioDeleting()"
+                  >
+                    {{ portfolioDeleting() ? 'Deleting...' : 'Delete Portfolio' }}
+                  </button>
+                }
+              </div>
+
+              @if (uploadStatus()) {
+                <p class="manager-status">{{ uploadStatus() }}</p>
+              }
+            </article>
+          } @else {
+            <article class="feature-card manager-panel">
+              <header>
+                <h2>Generator</h2>
+                <p>Generate editable holdings from sector, size, value, and strategy filters. Generate again to replace rows.</p>
+              </header>
+
+              <div class="generator-layout">
+                <fieldset>
+                  <legend>Sectors</legend>
+                  <div class="sector-options">
+                    @for (sector of generatorSectors; track sector) {
+                      <label class="checkbox-label">
+                        <input
+                          type="checkbox"
+                          [checked]="selectedGeneratorSectors().includes(sector)"
+                          (change)="toggleGeneratorSector(sector, $event)"
+                        />
+                        <span>{{ sector }}</span>
+                      </label>
+                    }
+                  </div>
+                </fieldset>
+
+                <div class="generator-fields">
+                  <label>
+                    Number of Assets
+                    <input
+                      name="generatorAssetCount"
+                      type="number"
+                      min="1"
+                      max="30"
+                      [ngModel]="generatorAssetCount()"
+                      (ngModelChange)="setGeneratorAssetCount($event)"
+                    />
+                  </label>
+                  <label>
+                    Portfolio Value
+                    <input
+                      name="generatorPortfolioValue"
+                      type="number"
+                      min="1000"
+                      max="10000000"
+                      step="1000"
+                      [ngModel]="generatorPortfolioValue()"
+                      (ngModelChange)="setGeneratorPortfolioValue($event)"
+                    />
+                  </label>
+                  <label>
+                    Strategy
+                    <select
+                      name="generatorStrategy"
+                      [ngModel]="generatorStrategy()"
+                      (ngModelChange)="setGeneratorStrategy($event)"
+                    >
+                      @for (strategy of generatorStrategies; track strategy.id) {
+                        <option [value]="strategy.id">{{ strategy.label }}</option>
+                      }
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div class="manager-actions">
+                <button type="button" class="primary-action" (click)="generatePortfolioRows()">Generate</button>
+              </div>
+            </article>
+          }
+
+          <article class="feature-card manager-table-card">
+            <header>
+              <h2>Portfolio Rows</h2>
+              <p>Rows stay editable before submission. Market value and weights update from quantity and price.</p>
+            </header>
+
+            <div class="draft-summary">
+              <span>{{ draftRows().length }} Positions</span>
+              <strong>{{ draftRowsTotal() | currency: draftBaseCurrency() : 'symbol' : '1.0-0' }}</strong>
+            </div>
+
+            @if (draftRows().length) {
+              <div class="manager-table-wrap">
+                <table class="manager-table">
+                  <thead>
+                    <tr>
+                      <th>Ticker</th>
+                      <th>Name</th>
+                      <th>Class</th>
+                      <th>Sector</th>
+                      <th>Quantity</th>
+                      <th>Avg Cost</th>
+                      <th>Price</th>
+                      <th>Daily %</th>
+                      <th>Value</th>
+                      <th>Weight</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of draftRows(); track row.id) {
+                      <tr>
+                        <td>
+                          <input
+                            [name]="'ticker-' + row.id"
+                            type="text"
+                            [ngModel]="row.ticker"
+                            (ngModelChange)="updateDraftRow(row.id, 'ticker', $event)"
+                            placeholder="AAPL"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            [name]="'name-' + row.id"
+                            type="text"
+                            [ngModel]="row.name"
+                            (ngModelChange)="updateDraftRow(row.id, 'name', $event)"
+                            placeholder="Apple Inc."
+                          />
+                        </td>
+                        <td>
+                          <select
+                            [name]="'assetClass-' + row.id"
+                            [ngModel]="row.assetClass"
+                            (ngModelChange)="updateDraftRow(row.id, 'assetClass', $event)"
+                          >
+                            @for (assetClass of assetClasses; track assetClass) {
+                              <option [value]="assetClass">{{ assetClass }}</option>
+                            }
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            [name]="'sector-' + row.id"
+                            type="text"
+                            [ngModel]="row.sector"
+                            (ngModelChange)="updateDraftRow(row.id, 'sector', $event)"
+                            placeholder="Technology"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            [name]="'quantity-' + row.id"
+                            type="number"
+                            step="0.0001"
+                            [ngModel]="row.quantity"
+                            (ngModelChange)="updateDraftRow(row.id, 'quantity', $event)"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            [name]="'averageCost-' + row.id"
+                            type="number"
+                            step="0.01"
+                            [ngModel]="row.averageCost"
+                            (ngModelChange)="updateDraftRow(row.id, 'averageCost', $event)"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            [name]="'currentPrice-' + row.id"
+                            type="number"
+                            step="0.01"
+                            [ngModel]="row.currentPrice"
+                            (ngModelChange)="updateDraftRow(row.id, 'currentPrice', $event)"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            [name]="'changePercent-' + row.id"
+                            type="number"
+                            step="0.01"
+                            [ngModel]="row.changePercent"
+                            (ngModelChange)="updateDraftRow(row.id, 'changePercent', $event)"
+                          />
+                        </td>
+                        <td>{{ marketValue(row) | currency: draftBaseCurrency() : 'symbol' : '1.0-0' }}</td>
+                        <td>{{ rowWeight(row) | percent: '1.1-1' }}</td>
+                        <td class="row-actions">
+                          <button type="button" class="ghost-action" (click)="duplicateDraftRow(row)">Copy</button>
+                          <button type="button" class="danger-action" (click)="deleteDraftRow(row.id)">Delete</button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="empty-rows">No rows yet. Add a manual row, upload a file, or generate a portfolio.</p>
+            }
+
+            @if (managerStatus()) {
+              <p class="manager-status">{{ managerStatus() }}</p>
+            }
+          </article>
+        </section>
+      } @else {
+        @for (card of featurePage.cards; track card.title) {
+          <article class="feature-card">
+            <header>
+              <h2>{{ card.title }}</h2>
+              <p>{{ card.context }}</p>
+            </header>
+            <ul>
+              @for (detail of card.details; track detail) {
+                <li>{{ detail }}</li>
+              }
+            </ul>
+            <p class="mvp-note">{{ card.mvpNote }}</p>
+          </article>
+        }
+      }
+    </section>
+
+    <section class="prompt-panel">
+      <div class="prompt-copy">
+        <h2>AI Prompt Starters</h2>
+        <p>{{ featurePage.chatCallout }}</p>
+      </div>
+      <div class="prompt-actions">
+        @for (prompt of featurePage.chatPrompts; track prompt) {
+          <button type="button" (click)="openChatPrompt(prompt)">
+            {{ prompt }}
+          </button>
+        }
+      </div>
+    </section>
+  </main>
+}

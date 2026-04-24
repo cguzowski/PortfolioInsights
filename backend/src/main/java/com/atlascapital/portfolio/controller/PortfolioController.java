@@ -1,5 +1,6 @@
 package com.atlascapital.portfolio.controller;
 
+import com.atlascapital.portfolio.dto.PortfolioCreateRequest;
 import com.atlascapital.portfolio.dto.PortfolioHoldingRequest;
 import com.atlascapital.portfolio.dto.PortfolioHoldingResponse;
 import com.atlascapital.portfolio.dto.PortfolioSummaryResponse;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/portfolio")
 public class PortfolioController {
@@ -31,6 +34,30 @@ public class PortfolioController {
     public PortfolioSummaryResponse getPortfolio(@RequestParam(required = false) Long userId,
                                                  @RequestParam(required = false) Long portfolioId) {
         return portfolioService.getPortfolio(userId, portfolioId);
+    }
+
+    @GetMapping("/all")
+    public List<PortfolioSummaryResponse> getPortfolios(@RequestParam(required = false) Long userId) {
+        return portfolioService.getPortfolios(userId);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public PortfolioSummaryResponse createPortfolio(@Valid @RequestBody PortfolioCreateRequest request) {
+        return portfolioService.createPortfolio(request);
+    }
+
+    @PutMapping("/{portfolioId}")
+    public PortfolioSummaryResponse updatePortfolio(@PathVariable Long portfolioId,
+                                                    @Valid @RequestBody PortfolioCreateRequest request) {
+        return portfolioService.updatePortfolio(portfolioId, request);
+    }
+
+    @DeleteMapping("/{portfolioId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePortfolio(@PathVariable Long portfolioId,
+                                @RequestParam(required = false) Long userId) {
+        portfolioService.deletePortfolio(userId, portfolioId);
     }
 
     @PostMapping("/holdings")

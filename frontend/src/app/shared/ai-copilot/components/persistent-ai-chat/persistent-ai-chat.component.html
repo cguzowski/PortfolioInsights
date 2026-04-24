@@ -1,0 +1,63 @@
+<section class="chat-root" [ngClass]="{ 'chat-open': copilot.isOpen() }">
+  <button class="chat-launcher" type="button" (click)="toggleChat()">
+    <span>AI Chat</span>
+    <small>Ask Portfolio Anything</small>
+  </button>
+
+  @if (copilot.isOpen()) {
+    <article class="chat-panel">
+      <header class="chat-header">
+        <div>
+          <p>Atlas Copilot</p>
+          <h2>Persistent AI Assistant</h2>
+        </div>
+        <button type="button" (click)="toggleChat()">Close</button>
+      </header>
+
+      <div class="tone-switch" role="group" aria-label="AI response tone">
+        <button
+          type="button"
+          [ngClass]="{ active: copilot.tone() === 'eli5' }"
+          (click)="setTone('eli5')"
+        >
+          Explain Like I'm 5
+        </button>
+        <button
+          type="button"
+          [ngClass]="{ active: copilot.tone() === 'hedge-fund' }"
+          (click)="setTone('hedge-fund')"
+        >
+          Explain Like I'm a Hedge Fund
+        </button>
+      </div>
+
+      <div class="message-stream" aria-live="polite">
+        @for (message of copilot.messages(); track message.id) {
+          <article class="bubble" [ngClass]="{ user: message.author === 'user' }">
+            <p>{{ message.text }}</p>
+            <span>{{ message.timeLabel }}</span>
+          </article>
+        }
+      </div>
+
+      <div class="quick-prompts">
+        @for (prompt of copilot.quickPrompts; track prompt) {
+          <button type="button" (click)="usePrompt(prompt)">{{ prompt }}</button>
+        }
+      </div>
+
+      <form class="chat-form" (ngSubmit)="sendMessage()">
+        <label class="sr-only" for="chat-draft">Message</label>
+        <textarea
+          id="chat-draft"
+          name="draft"
+          rows="3"
+          placeholder="Ask about risk, scenarios, or portfolio ideas..."
+          [ngModel]="copilot.draft()"
+          (ngModelChange)="copilot.updateDraft($event)"
+        ></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </article>
+  }
+</section>
