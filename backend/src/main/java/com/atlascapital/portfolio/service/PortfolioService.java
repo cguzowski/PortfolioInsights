@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Service
 @Transactional(readOnly = true)
@@ -195,23 +196,24 @@ public class PortfolioService {
     }
 
     private BigDecimal calculateHoldingsValue(List<PortfolioHoldingEntity> holdings) {
-        return scale(holdings.stream()
-                .map(holding -> holding.getCurrentPrice().multiply(holding.getQuantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add));
+        return sumHoldings(holdings, holding -> holding.getCurrentPrice().multiply(holding.getQuantity()));
     }
 
     private BigDecimal calculateTotalCost(List<PortfolioHoldingEntity> holdings) {
-        return scale(holdings.stream()
-                .map(holding -> holding.getAverageCost().multiply(holding.getQuantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add));
+        return sumHoldings(holdings, holding -> holding.getAverageCost().multiply(holding.getQuantity()));
     }
 
     private BigDecimal calculateDailyPnl(List<PortfolioHoldingEntity> holdings) {
+        return sumHoldings(holdings, holding -> holding.getCurrentPrice()
+                .multiply(holding.getQuantity())
+                .multiply(holding.getChangePercent())
+                .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
+    }
+
+    private BigDecimal sumHoldings(List<PortfolioHoldingEntity> holdings,
+                                   Function<PortfolioHoldingEntity, BigDecimal> value) {
         return scale(holdings.stream()
-                .map(holding -> holding.getCurrentPrice()
-                        .multiply(holding.getQuantity())
-                        .multiply(holding.getChangePercent())
-                        .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP))
+                .map(value)
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 

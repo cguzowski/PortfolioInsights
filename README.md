@@ -15,7 +15,7 @@ npm install
 npm start
 ```
 
-The Angular app expects the API at `http://localhost:8080/api/portfolio`.
+The Angular app reads API paths from `frontend/src/app/core/config/api.config.ts`.
 
 ## Backend
 
@@ -35,12 +35,24 @@ set DATABASE_PASSWORD=your-password
 set DATABASE_URL=jdbc:postgresql://localhost:5432/postgres?currentSchema=atlas_capital_intelligence
 ```
 
+Allow a different frontend origin for local CORS:
+
+```bash
+set FRONTEND_ORIGIN=http://localhost:4200
+```
+
 ## API Endpoints
 
 - `GET /api/portfolio`
+- `GET /api/portfolio/all`
+- `POST /api/portfolio`
+- `PUT /api/portfolio/{portfolioId}`
+- `DELETE /api/portfolio/{portfolioId}`
 - `POST /api/portfolio/holdings`
 - `PUT /api/portfolio/holdings/{id}`
 - `DELETE /api/portfolio/holdings/{id}`
+
+See `docs/live-data-integration.md` before adding external market, insight, risk, or scenario APIs.
 
 ## Database
 

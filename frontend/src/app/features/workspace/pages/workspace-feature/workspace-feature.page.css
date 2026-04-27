@@ -13,13 +13,17 @@
   gap: 1rem;
 }
 
-.feature-card {
-  min-width: 0;
-  padding: 1.2rem;
+.feature-card,
+.prompt-panel {
   border-radius: 8px;
   border: 1px solid var(--border-strong);
   background: var(--surface-1);
   box-shadow: var(--shadow-panel);
+}
+
+.feature-card {
+  min-width: 0;
+  padding: 1.2rem;
 }
 
 .feature-card header {
@@ -77,8 +81,6 @@ h2 {
 .overview-meta-grid article {
   min-width: 0;
   padding: 0.45rem 0.5rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
   background: var(--surface-2);
 }
 
@@ -120,7 +122,6 @@ ul {
   font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
 }
 
 .allocation-tabs button:hover,
@@ -239,14 +240,6 @@ ul {
   grid-template-columns: 1.2fr 1fr;
   gap: 0.9rem;
   padding: 1.1rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  background: var(--surface-1);
-  box-shadow: var(--shadow-panel);
-}
-
-.prompt-copy h2 {
-  font-size: 1.15rem;
 }
 
 .prompt-copy p {
@@ -269,13 +262,6 @@ ul {
   padding: 0.62rem 0.72rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
-}
-
-.prompt-actions button:hover {
-  transform: translateY(-1px);
-  border-color: rgba(110, 231, 183, 0.62);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
 }
 
 .portfolio-manager {
@@ -320,10 +306,6 @@ ul {
   font-size: 0.7rem;
 }
 
-.manager-tabs button.active small {
-  color: #042016;
-}
-
 .manager-panel,
 .manager-table-card {
   display: grid;
@@ -340,7 +322,9 @@ ul {
 
 .manager-controls label,
 .portfolio-meta-grid label,
-.generator-fields label {
+.generator-fields label,
+.simulation-select,
+.scenario-fields label {
   display: grid;
   gap: 0.35rem;
   color: var(--text-muted);
@@ -359,14 +343,8 @@ ul {
   gap: 0.7rem;
 }
 
-.manager-controls input,
-.manager-controls select,
-.portfolio-meta-grid input,
-.portfolio-meta-grid select,
-.generator-fields input,
-.generator-fields select,
-.manager-table input,
-.manager-table select {
+:is(.manager-controls, .portfolio-meta-grid, .generator-fields, .manager-table, .simulation-select, .scenario-fields)
+  :is(input, select) {
   width: 100%;
   min-width: 0;
   border: 1px solid var(--border-strong);
@@ -458,8 +436,6 @@ legend {
   gap: 0.75rem;
   align-items: baseline;
   padding: 0.7rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
   background: var(--surface-2);
 }
 
@@ -563,26 +539,6 @@ legend {
   top: 1rem;
 }
 
-.simulation-select,
-.scenario-fields label {
-  display: grid;
-  gap: 0.35rem;
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.simulation-select select,
-.scenario-fields input,
-.scenario-fields select {
-  width: 100%;
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  background: var(--surface-0);
-  color: var(--text-strong);
-  padding: 0.52rem 0.56rem;
-}
-
 .simulation-stack {
   display: grid;
   gap: 0.8rem;
@@ -593,8 +549,6 @@ legend {
   display: grid;
   gap: 0.8rem;
   padding: 0.85rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
   background: var(--surface-2);
 }
 
@@ -635,12 +589,20 @@ legend {
 .impact-grid article {
   min-width: 0;
   padding: 0.48rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
   background: var(--surface-0);
   color: var(--text-muted);
   font-size: 0.68rem;
   font-weight: 800;
+}
+
+.overview-meta-grid article,
+.draft-summary,
+.simulation-portfolio-card,
+.simulation-result-card,
+.simulation-mini-metrics span,
+.impact-grid article {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
 }
 
 .simulation-mini-metrics strong,

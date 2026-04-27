@@ -6,7 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { finalize, map } from 'rxjs';
 
 import { DEFAULT_FEATURE_PAGE, findFeaturePageById } from '../../data/workspace-pages';
-import { HoldingClassification, OverviewPortfolioOption } from '../../data/overview-portfolios';
+import { HoldingClassification, OverviewPortfolioOption } from '../../models/overview-portfolio';
 import { WorkspaceFeatureCard, WorkspacePage } from '../../models/workspace-page';
 import { WorkspacePortfolioContextService } from '../../services/workspace-portfolio-context.service';
 import {
@@ -557,32 +557,18 @@ export class WorkspaceFeaturePageComponent {
 
     const selectedPortfolio = this.portfolioContext.selectedPortfolio();
     const holdings = selectedPortfolio.summary.holdings;
-    const holdingsTotal = holdings.reduce((sum, holding) => sum + holding.marketValue, 0);
-
-    if (holdingsTotal <= 0) {
-      return [];
-    }
-
-    const groupedValues = new Map<string, number>();
-
-    for (const holding of holdings) {
-      const label = this.resolveAllocationLabel(
-        this.selectedAllocationView(),
-        holding,
-        selectedPortfolio.classifications,
-        selectedPortfolio.summary.baseCurrency
-      );
-      groupedValues.set(label, (groupedValues.get(label) ?? 0) + holding.marketValue);
-    }
-
-    return [...groupedValues.entries()]
-      .map(([label, value], index) => ({
-        label,
-        value: roundTo(value, 2),
-        percentage: roundTo((value / holdingsTotal) * 100, 2),
-        color: PIE_COLORS[index % PIE_COLORS.length]
-      }))
-      .sort((left, right) => right.value - left.value);
+    return this.toGroupedAllocationSlices(
+      holdings,
+      (holding) =>
+        this.resolveAllocationLabel(
+          this.selectedAllocationView(),
+          holding,
+          selectedPortfolio.classifications,
+          selectedPortfolio.summary.baseCurrency
+        ),
+      (holding) => holding.marketValue,
+      false
+    );
   });
 
   protected readonly allocationPieGradient = computed(() => {
@@ -754,7 +740,11 @@ export class WorkspaceFeaturePageComponent {
   }
 
   protected portfolioAllocationSlices(option: OverviewPortfolioOption): readonly AllocationSlice[] {
-    return this.buildPortfolioAllocationSlices(option.summary.holdings);
+    return this.toGroupedAllocationSlices(
+      option.summary.holdings,
+      (holding) => holding.assetClass,
+      (holding) => holding.marketValue
+    );
   }
 
   protected portfolioPieGradient(option: OverviewPortfolioOption): string {
@@ -763,10 +753,6 @@ export class WorkspaceFeaturePageComponent {
 
   protected simulationPieGradient(result: SimulationResult): string {
     return this.gradientForSlices(result.allocationSlices);
-  }
-
-  protected changeClass(value: number): string {
-    return value >= 0 ? 'positive' : 'negative';
   }
 
   protected handlePortfolioFileUpload(event: Event): void {
@@ -921,26 +907,12 @@ export class WorkspaceFeaturePageComponent {
     validRows: readonly DraftHoldingRow[],
     payload: PortfolioCreatePayload
   ): void {
-    this.draftRows.set(validRows);
-    this.portfolioSaving.set(true);
-    this.managerStatus.set('');
-
-    this.portfolioService
-      .createPortfolio(payload)
-      .pipe(finalize(() => this.portfolioSaving.set(false)))
-      .subscribe({
-        next: (createdPortfolio) => {
-          const createdPortfolioKey = this.portfolioContext.registerDatabasePortfolio(createdPortfolio);
-          this.selectedManagedPortfolioKey.set(createdPortfolioKey);
-          this.syncDraftWithPortfolioSummary(createdPortfolio);
-          this.managerStatus.set(
-            `${createdPortfolio.portfolioName} created in the database with ${createdPortfolio.holdings.length} positions.`
-          );
-        },
-        error: () => {
-          this.managerStatus.set('Unable to create portfolio. Confirm the API is running and the selected user exists.');
-        }
-      });
+    this.persistManagedPortfolio(
+      validRows,
+      this.portfolioService.createPortfolio(payload),
+      'created',
+      'Unable to create portfolio. Confirm the API is running and the selected user exists.'
+    );
   }
 
   private updateManagedPortfolio(
@@ -953,25 +925,36 @@ export class WorkspaceFeaturePageComponent {
       return;
     }
 
+    this.persistManagedPortfolio(
+      validRows,
+      this.portfolioService.updatePortfolio(selectedOption.summary.portfolioId, payload),
+      'updated',
+      'Unable to update portfolio. Confirm the API is running and the portfolio still exists.'
+    );
+  }
+
+  private persistManagedPortfolio(
+    validRows: readonly DraftHoldingRow[],
+    request$: ReturnType<PortfolioService['createPortfolio']>,
+    action: 'created' | 'updated',
+    errorMessage: string
+  ): void {
     this.draftRows.set(validRows);
     this.portfolioSaving.set(true);
     this.managerStatus.set('');
 
-    this.portfolioService
-      .updatePortfolio(selectedOption.summary.portfolioId, payload)
+    request$
       .pipe(finalize(() => this.portfolioSaving.set(false)))
       .subscribe({
-        next: (updatedPortfolio) => {
-          const updatedPortfolioKey = this.portfolioContext.registerDatabasePortfolio(updatedPortfolio);
-          this.selectedManagedPortfolioKey.set(updatedPortfolioKey);
-          this.syncDraftWithPortfolioSummary(updatedPortfolio);
+        next: (portfolio) => {
+          const portfolioKey = this.portfolioContext.registerDatabasePortfolio(portfolio);
+          this.selectedManagedPortfolioKey.set(portfolioKey);
+          this.syncDraftWithPortfolioSummary(portfolio);
           this.managerStatus.set(
-            `${updatedPortfolio.portfolioName} updated in the database with ${updatedPortfolio.holdings.length} positions.`
+            `${portfolio.portfolioName} ${action} in the database with ${portfolio.holdings.length} positions.`
           );
         },
-        error: () => {
-          this.managerStatus.set('Unable to update portfolio. Confirm the API is running and the portfolio still exists.');
-        }
+        error: () => this.managerStatus.set(errorMessage)
       });
   }
 
@@ -1027,7 +1010,11 @@ export class WorkspaceFeaturePageComponent {
       bestHolding: sortedHoldings[0] ?? null,
       worstHolding: sortedHoldings[sortedHoldings.length - 1] ?? null,
       holdings,
-      allocationSlices: this.buildSimulatedAllocationSlices(holdings)
+      allocationSlices: this.toGroupedAllocationSlices(
+        holdings,
+        (holding) => holding.assetClass,
+        (holding) => holding.afterValue
+      )
     };
   }
 
@@ -1091,23 +1078,24 @@ export class WorkspaceFeaturePageComponent {
     return roundTo(clamp(shock * HORIZON_FACTORS[this.scenarioHorizon()], -90, 180), 2);
   }
 
-  private buildPortfolioAllocationSlices(holdings: readonly PortfolioHolding[]): readonly AllocationSlice[] {
+  private toGroupedAllocationSlices<T>(
+    holdings: readonly T[],
+    labelOf: (holding: T) => string,
+    valueOf: (holding: T) => number,
+    includeZeroTotal = true
+  ): readonly AllocationSlice[] {
     const totals = new Map<string, number>();
-    const totalValue = holdings.reduce((sum, holding) => sum + holding.marketValue, 0);
+    let totalValue = 0;
 
     for (const holding of holdings) {
-      totals.set(holding.assetClass, (totals.get(holding.assetClass) ?? 0) + holding.marketValue);
+      const value = valueOf(holding);
+      const label = labelOf(holding);
+      totalValue += value;
+      totals.set(label, (totals.get(label) ?? 0) + value);
     }
 
-    return this.toAllocationSlices(totals, totalValue);
-  }
-
-  private buildSimulatedAllocationSlices(holdings: readonly SimulatedHolding[]): readonly AllocationSlice[] {
-    const totals = new Map<string, number>();
-    const totalValue = holdings.reduce((sum, holding) => sum + holding.afterValue, 0);
-
-    for (const holding of holdings) {
-      totals.set(holding.assetClass, (totals.get(holding.assetClass) ?? 0) + holding.afterValue);
+    if (!includeZeroTotal && totalValue <= 0) {
+      return [];
     }
 
     return this.toAllocationSlices(totals, totalValue);
@@ -1141,10 +1129,6 @@ export class WorkspaceFeaturePageComponent {
 
   protected asPercent(value: number): number {
     return value / 100;
-  }
-
-  protected toFiniteInput(value: string | number): number {
-    return this.toFiniteNumber(value);
   }
 
   private nextDraftRowId(): number {
@@ -1402,7 +1386,7 @@ export class WorkspaceFeaturePageComponent {
     return this.toFiniteNumber(rawValue);
   }
 
-  private toFiniteNumber(value: string | number): number {
+  protected toFiniteNumber(value: string | number): number {
     const normalizedValue = typeof value === 'string' ? value.replace(/[$,%\s]/g, '') : value;
     const numericValue = Number(normalizedValue);
     return Number.isFinite(numericValue) ? numericValue : 0;

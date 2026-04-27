@@ -34,14 +34,6 @@
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
 
-.eyebrow {
-  margin: 0 0 10px;
-  color: #7dd5bc;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.76rem;
-}
-
 h1,
 h2,
 strong {
@@ -90,22 +82,7 @@ h1 {
   margin-top: 24px;
 }
 
-.panel {
-  padding: 28px;
-  border: 1px solid var(--panel-border);
-  border-radius: 24px;
-  background: rgba(10, 25, 46, 0.82);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(18px);
-}
-
-.panel-header {
-  margin-bottom: 24px;
-}
-
 .panel-header h2 {
-  margin: 6px 0 0;
-  font-size: 1.75rem;
   color: var(--text);
 }
 

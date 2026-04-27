@@ -3,11 +3,11 @@ import { finalize } from 'rxjs';
 
 import {
   DATABASE_PORTFOLIO_KEY,
-  MOCK_OVERVIEW_PORTFOLIOS,
-  OverviewPortfolioOption,
   databasePortfolioKey,
   toDatabasePortfolioOption
-} from '../data/overview-portfolios';
+} from '../mappers/overview-portfolio.mapper';
+import { MOCK_OVERVIEW_PORTFOLIOS } from '../data/overview-portfolios';
+import { OverviewPortfolioOption } from '../models/overview-portfolio';
 import { PortfolioSummary } from '../../portfolio/models/portfolio';
 import { PortfolioService } from '../../portfolio/services/portfolio.service';
 

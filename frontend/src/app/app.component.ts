@@ -6,8 +6,8 @@ import { ShellComponent } from './layout/shell/shell.component';
   selector: 'app-root',
   standalone: true,
   imports: [ShellComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  template: '<app-shell />',
+  styles: [':host { display: block; }']
 })
 export class AppComponent {
 }

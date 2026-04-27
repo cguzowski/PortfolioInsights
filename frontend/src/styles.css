@@ -45,3 +45,72 @@ textarea,
 select {
   font: inherit;
 }
+
+.panel,
+.metric-card {
+  border: 1px solid var(--panel-border, rgba(125, 169, 255, 0.16));
+  background: rgba(10, 25, 46, 0.82);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(18px);
+}
+
+.panel {
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.panel-header h2 {
+  margin: 6px 0 0;
+  color: var(--text, #f2f6fb);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.75rem;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #7dd5bc;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.76rem;
+}
+
+.primary-button,
+.ghost-button,
+.danger-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  cursor: pointer;
+}
+
+.primary-button {
+  background: linear-gradient(90deg, #57d3a1, #83c7ff);
+  color: #05111f;
+  font-weight: 700;
+}
+
+.ghost-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2f6fb;
+}
+
+.danger-button {
+  background: rgba(255, 124, 111, 0.14);
+  color: #ff7c6f;
+}
+
+.positive {
+  color: #57d3a1;
+}
+
+.negative {
+  color: #ff7c6f;
+}

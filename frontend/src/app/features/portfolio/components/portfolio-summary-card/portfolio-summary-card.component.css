@@ -1,10 +1,6 @@
 .metric-card {
   padding: 24px;
-  border: 1px solid rgba(125, 169, 255, 0.16);
   border-radius: 24px;
-  background: rgba(10, 25, 46, 0.82);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(18px);
 }
 
 span,
@@ -19,12 +15,4 @@ strong {
   font-size: 2rem;
   color: #f2f6fb;
   font-family: Georgia, "Times New Roman", serif;
-}
-
-.positive {
-  color: #57d3a1;
-}
-
-.negative {
-  color: #ff7c6f;
 }

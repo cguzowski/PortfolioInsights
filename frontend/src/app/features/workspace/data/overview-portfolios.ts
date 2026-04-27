@@ -1,20 +1,14 @@
-import { Allocation, PortfolioHolding, PortfolioSummary } from '../../portfolio/models/portfolio';
+import { Allocation, PortfolioHolding } from '../../portfolio/models/portfolio';
+import { buildClassifications } from '../mappers/overview-portfolio.mapper';
+import { HoldingClassification, OverviewPortfolioOption } from '../models/overview-portfolio';
 
-export type PortfolioSourceType = 'database' | 'mock';
-
-export interface HoldingClassification {
-  sector: string;
-  geography: string;
-  currency: string;
-}
-
-export interface OverviewPortfolioOption {
-  key: string;
-  label: string;
-  source: PortfolioSourceType;
-  summary: PortfolioSummary;
-  classifications: Readonly<Record<string, HoldingClassification>>;
-}
+export type { HoldingClassification, OverviewPortfolioOption, PortfolioSourceType } from '../models/overview-portfolio';
+export {
+  DATABASE_PORTFOLIO_KEY,
+  DEFAULT_HOLDING_CLASSIFICATIONS,
+  databasePortfolioKey,
+  toDatabasePortfolioOption
+} from '../mappers/overview-portfolio.mapper';
 
 interface MockHoldingSeed extends HoldingClassification {
   ticker: string;
@@ -38,26 +32,6 @@ interface MockPortfolioSeed {
   riskProfile: string;
   holdings: readonly MockHoldingSeed[];
 }
-
-export const DATABASE_PORTFOLIO_KEY = 'database-portfolio';
-
-export const DEFAULT_HOLDING_CLASSIFICATIONS: Readonly<Record<string, HoldingClassification>> = {
-  AAPL: { sector: 'Technology', geography: 'United States', currency: 'USD' },
-  MSFT: { sector: 'Technology', geography: 'United States', currency: 'USD' },
-  VTI: { sector: 'Broad Market Equity', geography: 'United States', currency: 'USD' },
-  BND: { sector: 'Fixed Income', geography: 'United States', currency: 'USD' },
-  GLD: { sector: 'Commodities', geography: 'Global', currency: 'USD' },
-  JNJ: { sector: 'Healthcare', geography: 'United States', currency: 'USD' },
-  KO: { sector: 'Consumer Staples', geography: 'United States', currency: 'USD' },
-  SCHD: { sector: 'Dividend Equity', geography: 'United States', currency: 'USD' },
-  LQD: { sector: 'Corporate Bonds', geography: 'United States', currency: 'USD' },
-  VNQ: { sector: 'Real Estate', geography: 'United States', currency: 'USD' },
-  NVDA: { sector: 'Semiconductors', geography: 'United States', currency: 'USD' },
-  ASML: { sector: 'Semiconductors', geography: 'Netherlands', currency: 'EUR' },
-  TSM: { sector: 'Semiconductors', geography: 'Taiwan', currency: 'TWD' },
-  MELI: { sector: 'E-Commerce', geography: 'Latin America', currency: 'USD' },
-  BTC: { sector: 'Digital Asset', geography: 'Global', currency: 'USD' }
-};
 
 const mockPortfolioSeeds: readonly MockPortfolioSeed[] = [
   {
@@ -212,20 +186,6 @@ export const MOCK_OVERVIEW_PORTFOLIOS: readonly OverviewPortfolioOption[] = mock
   buildMockPortfolio(seed)
 );
 
-export function databasePortfolioKey(portfolioId: number): string {
-  return `${DATABASE_PORTFOLIO_KEY}-${portfolioId}`;
-}
-
-export function toDatabasePortfolioOption(summary: PortfolioSummary): OverviewPortfolioOption {
-  return {
-    key: databasePortfolioKey(summary.portfolioId),
-    label: `${summary.portfolioName} (Database)`,
-    source: 'database',
-    summary,
-    classifications: buildClassifications(summary.holdings)
-  };
-}
-
 function buildMockPortfolio(seed: MockPortfolioSeed): OverviewPortfolioOption {
   const holdings = seed.holdings.map((holding, index) => {
     const marketValue = roundCurrency(holding.quantity * holding.currentPrice);
@@ -312,37 +272,6 @@ function buildAssetClassAllocations(holdings: readonly PortfolioHolding[]): Allo
       percentage: holdingsTotal > 0 ? roundPercent((value / holdingsTotal) * 100) : 0
     }))
     .sort((a, b) => b.percentage - a.percentage);
-}
-
-function buildClassifications(
-  holdings: readonly Pick<PortfolioHolding, 'ticker'>[] | readonly MockHoldingSeed[]
-): Readonly<Record<string, HoldingClassification>> {
-  const classifications: Record<string, HoldingClassification> = {};
-
-  for (const holding of holdings) {
-    const knownClassification = DEFAULT_HOLDING_CLASSIFICATIONS[holding.ticker];
-    if (knownClassification) {
-      classifications[holding.ticker] = knownClassification;
-      continue;
-    }
-
-    if ('sector' in holding && 'geography' in holding && 'currency' in holding) {
-      classifications[holding.ticker] = {
-        sector: holding.sector,
-        geography: holding.geography,
-        currency: holding.currency
-      };
-      continue;
-    }
-
-    classifications[holding.ticker] = {
-      sector: 'Unclassified',
-      geography: 'Global',
-      currency: 'USD'
-    };
-  }
-
-  return classifications;
 }
 
 function roundCurrency(value: number): number {
