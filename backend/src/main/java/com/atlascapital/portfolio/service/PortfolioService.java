@@ -3,13 +3,16 @@ package com.atlascapital.portfolio.service;
 import com.atlascapital.common.exception.HoldingNotFoundException;
 import com.atlascapital.common.exception.PortfolioNotFoundException;
 import com.atlascapital.portfolio.dto.AllocationResponse;
+import com.atlascapital.portfolio.dto.PortfolioCreateRequest;
 import com.atlascapital.portfolio.dto.PortfolioHoldingRequest;
 import com.atlascapital.portfolio.dto.PortfolioHoldingResponse;
 import com.atlascapital.portfolio.dto.PortfolioSummaryResponse;
+import com.atlascapital.portfolio.entity.AppUserEntity;
 import com.atlascapital.portfolio.entity.PortfolioEntity;
 import com.atlascapital.portfolio.entity.PortfolioHoldingEntity;
 import com.atlascapital.portfolio.repository.PortfolioHoldingRepository;
 import com.atlascapital.portfolio.repository.PortfolioRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,15 +29,77 @@ import java.util.Map;
 public class PortfolioService {
     private final PortfolioRepository portfolioRepository;
     private final PortfolioHoldingRepository portfolioHoldingRepository;
+    private final EntityManager entityManager;
 
     public PortfolioService(PortfolioRepository portfolioRepository,
-                            PortfolioHoldingRepository portfolioHoldingRepository) {
+                            PortfolioHoldingRepository portfolioHoldingRepository,
+                            EntityManager entityManager) {
         this.portfolioRepository = portfolioRepository;
         this.portfolioHoldingRepository = portfolioHoldingRepository;
+        this.entityManager = entityManager;
     }
 
     public PortfolioSummaryResponse getPortfolio(Long userId, Long portfolioId) {
         PortfolioEntity portfolio = getManagedPortfolio(userId, portfolioId);
+        return toSummary(portfolio);
+    }
+
+    public List<PortfolioSummaryResponse> getPortfolios(Long userId) {
+        List<PortfolioEntity> portfolios = userId != null
+                ? portfolioRepository.findByUser_IdOrderByIdAsc(userId)
+                : portfolioRepository.findAllByOrderByIdAsc();
+
+        return portfolios.stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+    @Transactional
+    public PortfolioSummaryResponse createPortfolio(PortfolioCreateRequest request) {
+        AppUserEntity user = entityManager.find(AppUserEntity.class, request.userId());
+        if (user == null) {
+            throw new PortfolioNotFoundException("User with id " + request.userId() + " was not found.");
+        }
+
+        PortfolioEntity portfolio = new PortfolioEntity();
+        portfolio.setUser(user);
+        applyPortfolioRequest(portfolio, request);
+
+        PortfolioEntity persisted = portfolioRepository.saveAndFlush(portfolio);
+        return toSummary(persisted);
+    }
+
+    @Transactional
+    public PortfolioSummaryResponse updatePortfolio(Long portfolioId, PortfolioCreateRequest request) {
+        PortfolioEntity portfolio = getManagedPortfolio(request.userId(), portfolioId);
+        applyPortfolioRequest(portfolio, request);
+
+        PortfolioEntity updated = portfolioRepository.saveAndFlush(portfolio);
+        return toSummary(updated);
+    }
+
+    @Transactional
+    public void deletePortfolio(Long userId, Long portfolioId) {
+        PortfolioEntity portfolio = getManagedPortfolio(userId, portfolioId);
+        portfolioRepository.delete(portfolio);
+        portfolioRepository.flush();
+    }
+
+    private void applyPortfolioRequest(PortfolioEntity portfolio, PortfolioCreateRequest request) {
+        portfolio.setPortfolioName(request.portfolioName().trim());
+        portfolio.setBaseCurrency(request.baseCurrency().trim().toUpperCase());
+        portfolio.setRiskProfile(request.riskProfile().trim());
+        portfolio.setCashBalance(scale(request.cashBalance()));
+        portfolio.clearHoldings();
+
+        for (PortfolioHoldingRequest holdingRequest : request.holdings()) {
+            PortfolioHoldingEntity holding = new PortfolioHoldingEntity();
+            applyRequest(holding, holdingRequest);
+            portfolio.addHolding(holding);
+        }
+    }
+
+    private PortfolioSummaryResponse toSummary(PortfolioEntity portfolio) {
         BigDecimal holdingsValue = calculateHoldingsValue(portfolio.getHoldings());
         BigDecimal totalValue = holdingsValue.add(portfolio.getCashBalance());
         BigDecimal totalCost = calculateTotalCost(portfolio.getHoldings());

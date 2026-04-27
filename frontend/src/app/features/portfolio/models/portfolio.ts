@@ -44,3 +44,12 @@ export interface PortfolioHoldingPayload {
   currentPrice: number;
   changePercent: number;
 }
+
+export interface PortfolioCreatePayload {
+  userId: number;
+  portfolioName: string;
+  baseCurrency: string;
+  riskProfile: string;
+  cashBalance: number;
+  holdings: PortfolioHoldingPayload[];
+}

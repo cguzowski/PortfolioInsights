@@ -1,1 +1,53 @@
-<router-outlet />
+<div class="shell">
+  <header class="topbar">
+    <div class="topbar-main">
+      <div class="brand-block">
+        <p>Atlas Capital Intelligence</p>
+        <h1>Portfolio Intelligence Workbench</h1>
+      </div>
+
+      <section class="session-card" aria-label="Active workspace context">
+        <p class="session-eyebrow">Welcome Back</p>
+        <h2>{{ portfolioContext.greetingName() }}</h2>
+        <label for="global-portfolio-select">Selected Portfolio</label>
+        <select
+          id="global-portfolio-select"
+          [value]="portfolioContext.selectedPortfolio().key"
+          (change)="changeActivePortfolio($event)"
+        >
+          @for (option of portfolioContext.portfolioOptions(); track option.key) {
+            <option [value]="option.key">{{ option.label }}</option>
+          }
+        </select>
+
+        @if (portfolioContext.databasePortfolioLoading()) {
+          <p class="session-note">Syncing database portfolio...</p>
+        } @else if (portfolioContext.databasePortfolioError()) {
+          <p class="session-note error">
+            {{ portfolioContext.databasePortfolioError() }}
+            <button type="button" (click)="portfolioContext.retryDatabaseLoad()">Retry</button>
+          </p>
+        }
+      </section>
+    </div>
+
+    <nav class="page-nav" aria-label="Workspace pages">
+      @for (page of featurePages; track page.id) {
+        <a
+          [routerLink]="['/', page.route]"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <span>{{ page.navLabel }}</span>
+          <small>{{ page.navHint }}</small>
+        </a>
+      }
+    </nav>
+  </header>
+
+  <section class="content-shell">
+    <router-outlet />
+  </section>
+
+  <app-persistent-ai-chat />
+</div>

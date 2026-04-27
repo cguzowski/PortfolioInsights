@@ -4,6 +4,7 @@ import com.atlascapital.portfolio.entity.PortfolioEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PortfolioRepository extends JpaRepository<PortfolioEntity, Long> {
@@ -19,4 +20,10 @@ public interface PortfolioRepository extends JpaRepository<PortfolioEntity, Long
 
     @EntityGraph(attributePaths = {"user", "holdings"})
     Optional<PortfolioEntity> findFirstByOrderByIdAsc();
+
+    @EntityGraph(attributePaths = {"user", "holdings"})
+    List<PortfolioEntity> findByUser_IdOrderByIdAsc(Long userId);
+
+    @EntityGraph(attributePaths = {"user", "holdings"})
+    List<PortfolioEntity> findAllByOrderByIdAsc();
 }
